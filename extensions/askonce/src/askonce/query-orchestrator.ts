@@ -1,6 +1,6 @@
 /**
- * 查询编排器
- * 负责协调整个查询流程
+ * Query orchestrator
+ * Coordinates the entire query flow
  */
 
 import { randomUUID } from "node:crypto";
@@ -9,32 +9,8 @@ import { ConcurrentEngine } from "./concurrent-engine.js";
 import type { QueryOptions, QueryResult, ModelResponse, ProgressCallback } from "./types.js";
 
 /**
- * 根据模型 ID 获取适配器
- * 支持模型 ID（如 "claude"）和适配器 ID（如 "claude-web"）
- */
-function getAdapterByModelId(
-  registry: ReturnType<typeof getAdapterRegistry>,
-  modelId: string,
-): ModelAdapter | undefined {
-  // 先尝试直接通过适配器 ID 查找
-  const adapter = registry.getAdapterById(modelId);
-  if (adapter) {
-    return adapter;
-  }
-
-  // 如果没找到，遍历所有适配器，通过模型列表查找
-  for (const a of registry.getAllAdapters()) {
-    if (a.models.includes(modelId)) {
-      return a;
-    }
-  }
-
-  return undefined;
-}
-
-/**
- * 查询编排器
- * 负责协调整个查询流程
+ * Query orchestrator
+ * Coordinates the entire query flow
  */
 export class QueryOrchestrator {
   private engine: ConcurrentEngine;
@@ -46,18 +22,18 @@ export class QueryOrchestrator {
   }
 
   /**
-   * 执行多模型查询
+   * Execute multi-model query
    */
   async query(options: QueryOptions, onProgress?: ProgressCallback): Promise<QueryResult> {
     const queryId = randomUUID();
     const startTime = Date.now();
 
-    console.log(`[QueryOrchestrator] 开始查询: "${options.question.slice(0, 50)}..."`);
+    console.log(`[QueryOrchestrator] Starting query: "${options.question.slice(0, 50)}..."`);
 
-    // 获取要使用的适配器
+    // Get adapters to use
     let adapters: ModelAdapter[];
     if (options.models && options.models.length > 0) {
-      // 根据模型 ID 获取适配器（支持模型 ID 和适配器 ID）
+      // Get adapters by model ID (supports model IDs and adapter IDs)
       const adapterSet = new Set<ModelAdapter>();
       for (const modelId of options.models) {
         const adapter = getAdapterByModelId(this.registry, modelId);
@@ -71,14 +47,14 @@ export class QueryOrchestrator {
     }
 
     if (adapters.length === 0) {
-      throw new Error("没有可用的模型适配器，请先配置认证");
+      throw new Error("No available model adapters, please configure authentication first");
     }
 
     console.log(
-      `[QueryOrchestrator] 使用 ${adapters.length} 个模型: ${adapters.map((a) => a.name).join(", ")}`,
+      `[QueryOrchestrator] Using ${adapters.length} models: ${adapters.map((a) => a.name).join(", ")}`,
     );
 
-    // 执行并发查询
+    // Execute concurrent queries
     const responses = await this.engine.executeAll(
       adapters,
       options.question,
@@ -91,7 +67,7 @@ export class QueryOrchestrator {
 
     const endTime = Date.now();
 
-    // 构建结果
+    // Build result
     const result: QueryResult = {
       queryId,
       question: options.question,
@@ -104,14 +80,14 @@ export class QueryOrchestrator {
     };
 
     console.log(
-      `[QueryOrchestrator] 查询完成: 成功 ${result.successCount}, 失败 ${result.errorCount}, 耗时 ${result.totalTime}ms`,
+      `[QueryOrchestrator] Query complete: success ${result.successCount}, failed ${result.errorCount}, duration ${result.totalTime}ms`,
     );
 
     return result;
   }
 
   /**
-   * 获取所有可用的模型列表
+   * Get list of all available models
    */
   async listAvailableModels(): Promise<
     Array<{ id: string; name: string; provider: string; available: boolean }>
@@ -124,7 +100,7 @@ export class QueryOrchestrator {
       for (const modelId of adapter.models) {
         results.push({
           id: modelId,
-          name: adapter.name, // 直接使用适配器名称，如 "Claude"、"ChatGPT" 等
+          name: adapter.name, // Use adapter name directly, e.g. "Claude", "ChatGPT", etc.
           provider: adapter.provider,
           available: isAvailable,
         });
@@ -135,7 +111,7 @@ export class QueryOrchestrator {
   }
 
   /**
-   * 获取所有模型列表（包括未认证的）
+   * Get all models list (including unauthenticated)
    */
   getAllModels(): Array<{ id: string; name: string; provider: string }> {
     const adapters = this.registry.getAllAdapters();
@@ -145,7 +121,7 @@ export class QueryOrchestrator {
       for (const modelId of adapter.models) {
         results.push({
           id: modelId,
-          name: adapter.name, // 直接使用适配器名称
+          name: adapter.name, // Use adapter name directly
           provider: adapter.provider,
         });
       }

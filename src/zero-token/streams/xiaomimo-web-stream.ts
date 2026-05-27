@@ -317,7 +317,7 @@ export function createXiaomiMimoWebStreamFn(cookieOrJson: string): StreamFn {
             return;
           }
 
-          // 处理 event: 行
+          // Handle event: line
           if (line.startsWith("event:")) {
             const event = line.slice(6).trim();
             if (event === "error") {
@@ -349,7 +349,7 @@ export function createXiaomiMimoWebStreamFn(cookieOrJson: string): StreamFn {
               return;
             }
 
-            // MiMo 格式: {"type":"text","content":"<think>...</think>actual answer"}
+            // MiMo format: {"type":"text","content":"<think>...</think>actual answer"}
             if (data.content && typeof data.content === "string") {
               let content = data.content;
 
@@ -380,7 +380,7 @@ export function createXiaomiMimoWebStreamFn(cookieOrJson: string): StreamFn {
               return;
             }
 
-            // OpenAI 格式
+            // OpenAI format
             const delta = data.choices?.[0]?.delta?.content ?? data.text ?? data.delta;
             if (typeof delta === "string" && delta) {
               // OpenAI SSE may also send full content — dedup the same way
@@ -393,7 +393,7 @@ export function createXiaomiMimoWebStreamFn(cookieOrJson: string): StreamFn {
               }
             }
           } catch {
-            // 可能是纯文本
+            // Possibly plain text
             if (dataStr.length > 0 && !dataStr.startsWith("{")) {
               pushDelta(dataStr);
             }

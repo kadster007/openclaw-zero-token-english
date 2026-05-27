@@ -12,7 +12,7 @@ English | [简体中文](README.zh-CN.md)
 
 - [Overview](#overview)
 - [Zero Token docs (index)](docs/zero-token/index.md)
-- [Product requirements (tracking, 中文)](docs/zero-token/zero-token-requirements.md)
+- [Product requirements (tracking, Chinese)](docs/zero-token/zero-token-requirements.md)
 - [Upstream sync (Zero Token)](docs/zero-token/upstream-sync.md)
 - [Web models browser modes](docs/zero-token/web-models-browser-modes.md)
 - [How It Works](#how-it-works)

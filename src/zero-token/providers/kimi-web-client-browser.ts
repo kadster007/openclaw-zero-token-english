@@ -23,7 +23,7 @@ export interface KimiWebClientOptions {
 
 /**
  * Kimi Web Client using CDP attach
- * 使用 Connect RPC 纯 API（/apiv2/kimi.gateway.chat.v1.ChatService/Chat），kimi-auth 从 Cookie 提取
+ * Uses Connect RPC pure API (/apiv2/kimi.gateway.chat.v1.ChatService/Chat), kimi-auth extracted from Cookie
  */
 export class KimiWebClientBrowser {
   private cookie: string;
@@ -180,7 +180,7 @@ export class KimiWebClientBrowser {
     const authToken = this.accessToken || kimiAuthCookie;
     if (!authToken) {
       throw new Error(
-        "Kimi: 未找到认证凭证（accessToken 或 kimi-auth Cookie）。请重新运行 ./onboard.sh 刷新登录状态。",
+        "Kimi: no authentication credentials found (accessToken or kimi-auth Cookie). Please re-run ./onboard.sh to refresh login status.",
       );
     }
 
@@ -292,7 +292,7 @@ export class KimiWebClientBrowser {
     );
 
     if (!result.ok) {
-      throw new Error(`Kimi API 错误: ${result.error}`);
+      throw new Error(`Kimi API error: ${result.error}`);
     }
 
     const escaped = JSON.stringify(result.text);

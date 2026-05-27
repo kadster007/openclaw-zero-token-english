@@ -1,5 +1,5 @@
 /**
- * Qwen Web 适配器
+ * Qwen Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class QwenAdapter extends BaseAdapter {
   readonly provider = "alibaba";
   readonly models = ["qwen"];
   readonly defaultModel = "qwen";
-  // Qwen Web 实际使用的模型 ID
+  // Actual model ID used by Qwen Web
   private readonly actualModelId = "qwen-max";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class QwenAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "Qwen Web 未认证，请先运行 openclaw onboard qwen-web",
+          "Qwen Web not authenticated, please run openclaw onboard qwen-web first",
           startTime,
         );
       }

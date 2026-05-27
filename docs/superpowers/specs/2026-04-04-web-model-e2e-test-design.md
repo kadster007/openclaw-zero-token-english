@@ -66,16 +66,16 @@ Each test run picks randomly without repetition within a single run.
 
 **Chinese pool (for CN providers)**:
 
-1. "请帮我用简单的语言解释一下什么是量子计算"
-2. "写一首关于春天的五言绝句"
-3. "北京有哪些适合周末去的公园？推荐三个"
-4. "帮我把这段话改得更正式一些：我觉得这个方案还行"
-5. "简单介绍一下光合作用的过程"
-6. "推荐三本适合初学者的Python编程书籍"
-7. "中国传统节日春节有哪些习俗？简要说明"
-8. "请解释一下TCP和UDP的主要区别"
-9. "帮我写一段面试自我介绍，要求简洁有力"
-10. "描述一下你理解的人工智能的发展趋势"
+1. "Explain quantum computing in simple terms"
+2. "Write a five-character quatrain about spring"
+3. "What parks in Beijing are good for a weekend trip? Recommend three"
+4. "Make this text more formal: I think this plan is okay"
+5. "Briefly describe the process of photosynthesis"
+6. "Recommend three Python programming books for beginners"
+7. "What are the customs of the Chinese Spring Festival? Briefly explain"
+8. "Explain the main differences between TCP and UDP"
+9. "Write a concise and impactful self-introduction for an interview"
+10. "Describe the development trends of AI as you understand them"
 
 **English pool (for EN providers)**:
 

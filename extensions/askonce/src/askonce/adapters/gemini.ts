@@ -1,5 +1,5 @@
 /**
- * Gemini Web 适配器
+ * Gemini Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class GeminiAdapter extends BaseAdapter {
   readonly provider = "google";
   readonly models = ["gemini"];
   readonly defaultModel = "gemini";
-  // Gemini Web 实际使用的模型 ID
+  // Actual model ID used by Gemini Web
   private readonly actualModelId = "gemini-pro";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class GeminiAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "Gemini Web 未认证，请先运行 openclaw onboard gemini-web",
+          "Gemini Web not authenticated, please run openclaw onboard gemini-web first",
           startTime,
         );
       }

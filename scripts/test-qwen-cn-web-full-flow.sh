@@ -1,49 +1,49 @@
 #!/usr/bin/env bash
-# 国内 qwen-cn-web 完整自动化链路：选模型（请求体 / RPC 显式 model）→ 发消息 → 校验非空回复。
-# L1：Vitest（web stream 注册等）
-# L2：POST /v1/chat/completions，model=qwen-cn-web/Qwen3.5-Plus
-# L3：openclaw agent --model qwen-cn-web/Qwen3.5-Plus（与本回合「选模型」对齐）
+# Domestic qwen-cn-web full automated flow: select model (request body / RPC explicit model) → send message → verify non-empty response.
+# L1: Vitest (web stream registration, etc.)
+# L2: POST /v1/chat/completions, model=qwen-cn-web/Qwen3.5-Plus
+# L3: openclaw agent --model qwen-cn-web/Qwen3.5-Plus (aligned with the "select model" in this run)
 #
-# 前置：Gateway 已启动；qwen-cn-web 已 onboard；需 jq（L2/L3 校验）。
-# 环境变量：
-#   WEB_MODEL_TEST_URL、WEB_MODEL_TEST_TOKEN（必填）
-#   WEB_MODEL_TEST_PROMPT（可选）
-#   WEB_MODEL_TEST_QWEN_CN_MODEL（可选，默认 qwen-cn-web/Qwen3.5-Plus）
+# Prerequisites: Gateway started; qwen-cn-web onboarded; jq required (L2/L3 validation).
+# Environment variables:
+#   WEB_MODEL_TEST_URL, WEB_MODEL_TEST_TOKEN (required)
+#   WEB_MODEL_TEST_PROMPT (optional)
+#   WEB_MODEL_TEST_QWEN_CN_MODEL (optional, default qwen-cn-web/Qwen3.5-Plus)
 #
-# 说明：WebSocket chat.send（L4）无 per-request model，本会话脚本不跑 L4；
-# 若要与 Control UI 完全一致，见 docs/zero-token/WEB_MODEL_TEST_REPORT.md §L4/L5。
+# Note: WebSocket chat.send (L4) has no per-request model, this script does not run L4;
+# For full parity with Control UI, see docs/zero-token/WEB_MODEL_TEST_REPORT.md §L4/L5.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 QWEN_MODEL="${WEB_MODEL_TEST_QWEN_CN_MODEL:-qwen-cn-web/Qwen3.5-Plus}"
-export WEB_MODEL_TEST_PROMPT="${WEB_MODEL_TEST_PROMPT:-用一句话回答：1+1等于几？只输出数字和符号。}"
+export WEB_MODEL_TEST_PROMPT="${WEB_MODEL_TEST_PROMPT:-Answer in one sentence: what is 1+1? Output only numbers and symbols.}"
 
-echo "==> [L1] Zero Token web stream 单元测试"
+echo "==> [L1] Zero Token web stream unit tests"
 pnpm exec vitest run --config scripts/vitest.zero-token-web.config.ts
 
-: "${WEB_MODEL_TEST_URL:?设置 WEB_MODEL_TEST_URL，如 http://127.0.0.1:3001}"
-: "${WEB_MODEL_TEST_TOKEN:?设置 WEB_MODEL_TEST_TOKEN（网关 Bearer）}"
+: "${WEB_MODEL_TEST_URL:?Set WEB_MODEL_TEST_URL, e.g. http://127.0.0.1:3001}"
+: "${WEB_MODEL_TEST_TOKEN:?Set WEB_MODEL_TEST_TOKEN (Gateway Bearer)}"
 
 BASE="${WEB_MODEL_TEST_URL%/}"
 
 echo ""
-echo "==> [健康检查] GET ${BASE}/healthz"
+echo "==> [Health Check] GET ${BASE}/healthz"
 code="$(curl -sS -o /tmp/openclaw-healthz.json -w "%{http_code}" "${BASE}/healthz" || true)"
 if [[ "$code" != "200" ]]; then
-  echo "healthz HTTP $code，尝试 /health"
+  echo "healthz HTTP $code, trying /health"
   code="$(curl -sS -o /tmp/openclaw-healthz.json -w "%{http_code}" "${BASE}/health" || true)"
 fi
 if [[ "$code" != "200" ]]; then
-  echo "网关健康检查失败 (last http=$code)" >&2
+  echo "Gateway health check failed (last http=$code)" >&2
   cat /tmp/openclaw-healthz.json 2>/dev/null || true
   exit 1
 fi
 echo "health OK (http=$code)"
 
 if ! command -v jq >/dev/null 2>&1; then
-  echo "需要 jq 以校验 L2/L3 回复正文" >&2
+  echo "jq is required to validate L2/L3 response body" >&2
   exit 1
 fi
 
@@ -70,12 +70,12 @@ fi
 
 content="$(jq -r '.choices[0].message.content // empty' /tmp/openclaw-chat-qwen-cn.json)"
 if [[ -z "${content// }" ]]; then
-  echo "L2：响应 200 但 choices[0].message.content 为空" >&2
+  echo "L2: Response 200 but choices[0].message.content is empty" >&2
   head -c 1500 /tmp/openclaw-chat-qwen-cn.json >&2
   echo >&2
   exit 1
 fi
-echo "L2 助手回复（节选）: ${content:0:200}$([[ ${#content} -gt 200 ]] && echo ...)"
+echo "L2 assistant reply (excerpt): ${content:0:200}$([[ ${#content} -gt 200 ]] && echo ...)"
 
 echo ""
 echo "==> [L3] openclaw agent --model ${QWEN_MODEL}"
@@ -89,12 +89,12 @@ const payloads = j?.result?.payloads;
 const text = Array.isArray(payloads) && payloads[0] && typeof payloads[0].text === "string"
   ? payloads[0].text.trim() : "";
 if (!text) {
-  console.error("L3：agent --json 无 result.payloads[0].text:", raw.slice(0, 800));
+  console.error("L3: agent --json has no result.payloads[0].text:", raw.slice(0, 800));
   process.exit(1);
 }
-console.log("L3 助手回复（节选）:", text.slice(0, 200) + (text.length > 200 ? "..." : ""));
+console.log("L3 assistant reply (excerpt):", text.slice(0, 200) + (text.length > 200 ? "..." : ""));
 ' "$AGENT_OUT"
 rm -f "$AGENT_OUT"
 
 echo ""
-echo "qwen-cn-web 全流程（L1+L2+L3）已完成。"
+echo "qwen-cn-web full flow (L1+L2+L3) completed."

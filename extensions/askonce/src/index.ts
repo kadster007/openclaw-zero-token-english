@@ -1,7 +1,6 @@
 /**
  * AskOnce Plugin
  *
- * 一次提问，获取所有大模型答案
  * Query multiple AI models simultaneously with a single question
  */
 
@@ -15,7 +14,7 @@ import { ConsoleFormatter, MarkdownFormatter, JsonFormatter } from "./askonce/fo
 import { QueryOrchestrator } from "./askonce/query-orchestrator.js";
 
 /**
- * 自动检测并设置 OPENCLAW_STATE_DIR
+ * Auto-detect and set OPENCLAW_STATE_DIR
  */
 function setupOpenclawStateDir(): void {
   if (process.env.OPENCLAW_STATE_DIR || process.env.OPENCLAW_ZERO_STATE_DIR) {
@@ -44,22 +43,22 @@ function setupOpenclawStateDir(): void {
 const askoncePlugin = {
   id: "askonce",
   name: "AskOnce",
-  description: "一次提问，获取所有大模型答案",
+  description: "Query multiple AI models simultaneously with a single question",
   configSchema: emptyPluginConfigSchema(),
   register(api: OpenClawPluginApi) {
-    // 注册 CLI 命令
+    // Register CLI commands
     api.registerCli(
       (ctx) => {
         ctx.program
         .command("askonce [question...]")
         .alias("ask")
-        .description("一次提问，获取所有大模型答案")
-        .option("-m, --models <models>", "指定模型 (逗号分隔)", "")
-        .option("-t, --timeout <ms>", "超时时间 (毫秒)", "60000")
-        .option("-o, --output <format>", "输出格式 (console/markdown/json)", "console")
-        .option("-f, --file <path>", "导出文件路径")
-        .option("-s, --stream", "启用流式输出", false)
-        .option("-l, --list", "列出所有可用模型", false)
+        .description("Query multiple AI models simultaneously with a single question")
+        .option("-m, --models <models>", "Specify models (comma-separated)", "")
+        .option("-t, --timeout <ms>", "Timeout (milliseconds)", "60000")
+        .option("-o, --output <format>", "Output format (console/markdown/json)", "console")
+        .option("-f, --file <path>", "Export file path")
+        .option("-s, --stream", "Enable streaming output", false)
+        .option("-l, --list", "List all available models", false)
         .allowUnknownOption()
         .action(async (question: string[] | undefined, options) => {
           await runAskOnce(ctx.program, options, question);
@@ -75,9 +74,9 @@ async function runAskOnce(_program: Command, options: any, question?: string[]):
 
   const orchestrator = new QueryOrchestrator();
 
-  // 列出可用模型
+  // List available models
   if (options.list) {
-    console.log("\n可用模型列表:");
+    console.log("\nAvailable models:");
     const models = await orchestrator.listAvailableModels();
     for (const model of models) {
       const status = model.available ? chalk.green("✓") : chalk.red("✗");
@@ -86,16 +85,16 @@ async function runAskOnce(_program: Command, options: any, question?: string[]):
     return;
   }
 
-  // 检查问题参数
+  // Check question arguments
   if (!question || question.length === 0) {
-    console.error("错误: 请提供问题参数");
+    console.error("Error: Please provide a question");
     console.error("");
-    console.error("用法:");
-    console.error('  openclaw askonce "你的问题"              # 提问');
-    console.error("  openclaw askonce --list                 # 列出可用模型");
-    console.error('  openclaw askonce "问题" -m claude-web   # 指定模型');
+    console.error("Usage:");
+    console.error('  openclaw askonce "your question"              # Ask a question');
+    console.error("  openclaw askonce --list                 # List available models");
+    console.error('  openclaw askonce "question" -m claude-web   # Specify a model');
     console.error("");
-    console.error("提示: 配置认证请使用 openclaw onboard <provider>");
+    console.error("Tip: Configure authentication with openclaw onboard <provider>");
     process.exit(1);
   }
 
@@ -139,12 +138,12 @@ async function runAskOnce(_program: Command, options: any, question?: string[]):
     if (options.file) {
       const fsPromises = await import("fs/promises");
       await fsPromises.writeFile(options.file, output, "utf-8");
-      console.log(`\n结果已保存到: ${options.file}`);
+      console.log(`\nResults saved to: ${options.file}`);
     } else {
       console.log(output);
     }
   } catch (error) {
-    console.error("查询失败:", error instanceof Error ? error.message : error);
+    console.error("Query failed:", error instanceof Error ? error.message : error);
     process.exit(1);
   }
 }

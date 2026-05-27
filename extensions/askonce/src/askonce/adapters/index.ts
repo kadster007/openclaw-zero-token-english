@@ -1,5 +1,5 @@
 /**
- * AskOnce 适配器导出
+ * AskOnce adapter exports
  */
 
 export { BaseAdapter } from "./base.js";

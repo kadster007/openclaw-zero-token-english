@@ -11,7 +11,7 @@ export interface GlmIntlWebClientOptions {
   headless?: boolean;
 }
 
-/** Model ID -> ChatGLM assistant_id mapping (国际版可能需要不同的映射) */
+/** Model ID -> ChatGLM assistant_id mapping (international version may need different mapping) */
 const ASSISTANT_ID_MAP: Record<string, string> = {
   "glm-4-plus": "65940acff94777010aa6b796",
   "glm-4": "65940acff94777010aa6b796",
@@ -335,7 +335,7 @@ export class GlmIntlWebClientBrowser {
         await input.click({ timeout: 5000 });
         await input.fill(params.message);
         const sendBtn = page
-          .locator('button.sendMessageButton, button[aria-label*="Send"], button:has-text("发送")')
+          .locator('button.sendMessageButton, button[aria-label*="Send"], button:has-text("Send")')
           .first();
         if ((await sendBtn.count()) > 0) {
           await sendBtn.click();

@@ -250,7 +250,7 @@ See [/providers/qwen](/providers/qwen) for setup details and notes.
 
 ### Volcano Engine (Doubao)
 
-Volcano Engine (火山引擎) provides access to Doubao and other models in China.
+Volcano Engine provides access to Doubao and other models in China.
 
 - Provider: `volcengine` (coding: `volcengine-plan`)
 - Auth: `VOLCANO_ENGINE_API_KEY`

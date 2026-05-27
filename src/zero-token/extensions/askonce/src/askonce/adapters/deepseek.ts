@@ -1,5 +1,5 @@
 /**
- * DeepSeek Web 适配器
+ * DeepSeek Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class DeepSeekAdapter extends BaseAdapter {
   readonly provider = "deepseek";
   readonly models = ["deepseek"];
   readonly defaultModel = "deepseek";
-  // DeepSeek Web 实际使用的模型 ID
+  // Actual model ID used by DeepSeek Web
   private readonly actualModelId = "deepseek-chat";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class DeepSeekAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "DeepSeek Web 未认证，请先运行 openclaw onboard deepseek-web",
+          "DeepSeek Web not authenticated, please run openclaw onboard deepseek-web first",
           startTime,
         );
       }

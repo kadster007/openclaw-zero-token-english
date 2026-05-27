@@ -160,7 +160,7 @@ export class ChatGPTWebClientBrowser {
     return { browser: this.browser, page: this.page };
   }
 
-  /** 确保 chatgpt.com 页面已加载且 oaistatic Sentinel 脚本已就绪 */
+  /** Ensure the chatgpt.com page has loaded and the oaistatic Sentinel script is ready */
   private async ensureChatGptPageReady() {
     if (!this.page) {
       return;
@@ -183,8 +183,8 @@ export class ChatGPTWebClientBrowser {
   }
 
   /**
-   * DOM 模拟：通过真实浏览器交互发送消息，绕过 403 风控
-   * 参考：zsodur/chatgpt-api-by-browser-script 等 DOM 模拟实现
+   * DOM simulation: send messages through real browser interaction to bypass 403 anti-bot
+   * Reference: zsodur/chatgpt-api-by-browser-script and other DOM simulation implementations
    */
   private async chatCompletionsViaDOM(params: {
     message: string;
@@ -207,7 +207,7 @@ export class ChatGPTWebClientBrowser {
       }
     }
     if (!inputHandle) {
-      throw new Error("ChatGPT DOM 模拟失败: 找不到输入框");
+      throw new Error("ChatGPT DOM simulation failed: input field not found");
     }
 
     await inputHandle.click();
@@ -217,7 +217,7 @@ export class ChatGPTWebClientBrowser {
     await page.keyboard.press("Enter");
     console.log("[ChatGPT Web Browser] DOM: typed message and pressed Enter");
 
-    // 轮询等待回复完成（最多约 90 秒，降低频率减少封号风险）
+    // Poll and wait for reply to complete (up to ~90 seconds, lower frequency to reduce ban risk)
     const maxWaitMs = 90000;
     const pollIntervalMs = 2000;
     let lastText = "";
@@ -226,7 +226,7 @@ export class ChatGPTWebClientBrowser {
 
     for (let elapsed = 0; elapsed < maxWaitMs; elapsed += pollIntervalMs) {
       if (signal?.aborted) {
-        throw new Error("ChatGPT 请求已取消");
+        throw new Error("ChatGPT request cancelled");
       }
 
       await new Promise((r) => setTimeout(r, pollIntervalMs));
@@ -256,7 +256,7 @@ export class ChatGPTWebClientBrowser {
 
     if (!lastText) {
       throw new Error(
-        "ChatGPT DOM 模拟：未检测到回复。请确保 chatgpt.com 页面已打开并登录，且输入框可见。",
+        "ChatGPT DOM simulation: no reply detected. Make sure the chatgpt.com page is open and logged in, and the input field is visible.",
       );
     }
 
@@ -459,7 +459,7 @@ export class ChatGPTWebClientBrowser {
     if (!responseData.ok) {
       if (responseData.status === 403) {
         console.log(
-          "[ChatGPT Web Browser] 403 风控，尝试 DOM 模拟 fallback（请求由真实浏览器发起，不易触发风控）",
+          "[ChatGPT Web Browser] 403 anti-bot triggered, falling back to DOM simulation (requests originate from real browser, less likely to trigger anti-bot)",
         );
         return this.chatCompletionsViaDOM({
           message: params.message,
@@ -467,13 +467,13 @@ export class ChatGPTWebClientBrowser {
         });
       }
       if (responseData.status === 401) {
-        throw new Error("ChatGPT 认证失败，请重新运行 ./onboard.sh 刷新 session。");
+        throw new Error("ChatGPT authentication failed, please re-run ./onboard.sh to refresh session.");
       }
       const sentinelHint = responseData.sentinelError
         ? ` Sentinel: ${responseData.sentinelError}`
-        : " 若持续 403，需在 chatgpt.com 控制台检查 oaistatic 脚本导出名是否变更。";
+        : " If 403 persists, check the oaistatic script export names in the chatgpt.com console.";
       throw new Error(
-        `ChatGPT API 错误 ${responseData.status}: ${responseData.error?.slice(0, 200) || ""}${sentinelHint}`,
+        `ChatGPT API error ${responseData.status}: ${responseData.error?.slice(0, 200) || ""}${sentinelHint}`,
       );
     }
 

@@ -1,5 +1,5 @@
 /**
- * Kimi Web 适配器
+ * Kimi Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class KimiAdapter extends BaseAdapter {
   readonly provider = "moonshot";
   readonly models = ["kimi"];
   readonly defaultModel = "kimi";
-  // Kimi Web 实际使用的模型 ID
+  // Actual model ID used by Kimi Web
   private readonly actualModelId = "moonshot-v1-8k";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class KimiAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "Kimi Web 未认证，请先运行 openclaw onboard kimi-web",
+          "Kimi Web not authenticated, please run openclaw onboard kimi-web first",
           startTime,
         );
       }

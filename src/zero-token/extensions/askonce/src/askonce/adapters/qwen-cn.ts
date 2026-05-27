@@ -1,5 +1,5 @@
 /**
- * Qwen CN (通义千问中国版) Web 适配器
+ * Qwen CN (Tongyi Qianwen China Edition) Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class QwenCNAdapter extends BaseAdapter {
   readonly provider = "alibaba";
   readonly models = ["qwen-cn"];
   readonly defaultModel = "qwen-cn";
-  // Qwen CN Web 实际使用的模型 ID
+  // Actual model ID used by Qwen CN Web
   private readonly actualModelId = "qwen-turbo";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class QwenCNAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "Qwen CN Web 未认证，请先运行 openclaw onboard qwen-cn-web",
+          "Qwen CN Web not authenticated, please run openclaw onboard qwen-cn-web first",
           startTime,
         );
       }

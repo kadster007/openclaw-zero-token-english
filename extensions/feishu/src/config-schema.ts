@@ -134,7 +134,7 @@ const ReactionNotificationModeSchema = z.enum(["off", "own", "all"]).optional();
  * - "enabled": Bot replies create or continue a Feishu topic thread
  *
  * When enabled, the Feishu reply API is called with `reply_in_thread: true`,
- * causing the reply to appear as a topic (话题) under the original message.
+ * causing the reply to appear as a topic under the original message.
  */
 const ReplyInThreadSchema = z.enum(["disabled", "enabled"]).optional();
 

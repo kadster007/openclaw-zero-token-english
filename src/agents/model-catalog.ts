@@ -344,9 +344,9 @@ const KNOWN_WEB_MODEL_ENTRIES: ModelCatalogEntry[] = [
   // gemini-web
   { id: "gemini-pro", name: "Gemini Pro", provider: "gemini-web", contextWindow: 32000 },
   { id: "gemini-ultra", name: "Gemini Ultra", provider: "gemini-web", contextWindow: 32000 },
-  // glm-web (国内)
+  // glm-web (China)
   { id: "glm-4-plus", name: "GLM Web", provider: "glm-web", contextWindow: 128000 },
-  // glm-intl-web (国际)
+  // glm-intl-web (International)
   { id: "glm-4-plus", name: "GLM-4 Plus (Intl)", provider: "glm-intl-web", contextWindow: 128000 },
   {
     id: "glm-4-think",

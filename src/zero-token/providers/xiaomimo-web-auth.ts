@@ -73,7 +73,7 @@ export async function loginXiaomiMimoWeb(params: {
     const context = browser.contexts()[0];
     let page = context.pages()[0];
 
-    // 查找是否已有 MiMo 页面
+    // Check if there is already a MiMo page
     if (!page) {
       page = await context.newPage();
     } else {
@@ -83,11 +83,11 @@ export async function loginXiaomiMimoWeb(params: {
       }
     }
 
-    // 调用 openUrl 打开浏览器
+    // Call openUrl to open the browser
     params.onProgress(`Opening ${XIAOMIMO_AUTH_URL}...`);
     await params.openUrl(XIAOMIMO_AUTH_URL);
 
-    // 直接导航到页面
+    // Navigate directly to the page
     await page
       .goto(XIAOMIMO_AUTH_URL, { waitUntil: "domcontentloaded", timeout: 15000 })
       .catch(() => {
@@ -132,7 +132,7 @@ export async function loginXiaomiMimoWeb(params: {
             `[XiaomiMimo] Found ${cookies.length} cookies: ${cookies.map((c) => c.name).join(", ")}`,
           );
 
-          // 查找 token 相关 cookie
+          // Look for token-related cookie
           const tokenCookie = cookies.find(
             (c) =>
               c.name.toLowerCase().includes("token") ||
@@ -165,7 +165,7 @@ export async function loginXiaomiMimoWeb(params: {
         }
       };
 
-      // 监听网络请求中的 token
+      // Listen for token in network requests
       page.on("request", async (request) => {
         const url = request.url();
         if (url.includes("xiaomimimo.com")) {
@@ -190,11 +190,11 @@ export async function loginXiaomiMimoWeb(params: {
         }
       });
 
-      // 监听响应
+      // Listen for responses
       page.on("response", async (response) => {
         const url = response.url();
         if (url.includes("xiaomimimo.com") && response.ok()) {
-          // 尝试从响应头或 body 中提取 token
+          // Try to extract token from response headers or body
           try {
             const ct = response.headers()["content-type"] || "";
             if (ct.includes("application/json")) {
@@ -213,7 +213,7 @@ export async function loginXiaomiMimoWeb(params: {
         }
       });
 
-      // 监听 localStorage 变化
+      // Listen for localStorage changes
       page.on("framenavigated", async () => {
         try {
           const storageData = await page.evaluate(() => {

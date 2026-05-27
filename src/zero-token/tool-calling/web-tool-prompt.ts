@@ -36,15 +36,15 @@ No tool needed? Answer directly.
 
 `;
 
-const CN_TEMPLATE = `工具: ${TOOL_DEFS}
+const CN_TEMPLATE = `Tools: ${TOOL_DEFS}
 
-示例: 要给数字5加1，返回:
+Example: to add 1 to number 5, return:
 \`\`\`tool_json
 {"tool":"plus_one","parameters":{"number":"5"}}
 \`\`\`
-(plus_one仅为示例，非真实工具)
+(plus_one is just an example, not a real tool)
 
-你的真实工具见上方列表。需要时只回复tool_json块。不需要则直接回答。
+Your actual tools are listed above. Need one? Reply ONLY with the tool_json block. No tool needed? Answer directly.
 
 `;
 

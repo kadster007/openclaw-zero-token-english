@@ -146,10 +146,10 @@ export class PerplexityWebClientBrowser {
     // Perplexity's /search API now returns HTML, not SSE, so we interact via DOM.
     const page = this.page;
 
-    // Click "新建问题" (New Thread) to start a fresh search.
+    // Click "New Thread" to start a fresh search.
     // This is more reliable than navigating to home page.
     const newThreadBtn = await page.$(
-      'button:has-text("新建问题"), button:has-text("New Thread"), a:has-text("新建问题"), a:has-text("New Thread")',
+      'button:has-text("New Thread"), a:has-text("New Thread")',
     );
     if (newThreadBtn) {
       await newThreadBtn.click();

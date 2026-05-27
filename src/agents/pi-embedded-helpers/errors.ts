@@ -219,11 +219,11 @@ export function isContextOverflowError(errorMessage?: string): boolean {
     // when the context window is exceeded. pi-ai surfaces it as "Unhandled stop reason: model_context_window_exceeded".
     lower.includes("context_window_exceeded") ||
     // Chinese proxy error messages for context overflow
-    errorMessage.includes("上下文过长") ||
-    errorMessage.includes("上下文超出") ||
-    errorMessage.includes("上下文长度超") ||
-    errorMessage.includes("超出最大上下文") ||
-    errorMessage.includes("请压缩上下文")
+    errorMessage.includes("context too long") ||
+    errorMessage.includes("context exceeded") ||
+    errorMessage.includes("context length exceeded") ||
+    errorMessage.includes("exceeds max context") ||
+    errorMessage.includes("please compress context")
   );
 }
 

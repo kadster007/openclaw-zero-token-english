@@ -6,11 +6,11 @@ const scriptsDir = fileURLToPath(new URL(".", import.meta.url));
 const root = path.resolve(scriptsDir, "..");
 const pluginSdkDist = path.resolve(root, "dist/plugin-sdk");
 
-/** 仅跑 Zero Token web stream 相关单元测试，不依赖 browser-playwright 与主 vitest 多项目配置。 */
+/** Run only Zero Token web stream related unit tests, no dependency on browser-playwright or main vitest multi-project config. */
 export default defineConfig({
   resolve: {
-    // extensions/browser（被若干 web-stream 间接引用）使用 openclaw/plugin-sdk/*；
-    // 根包未在 node_modules 下挂名为 openclaw 的链接时，Vite 需显式别名到 dist。
+    // extensions/browser (indirectly referenced by several web-streams) uses openclaw/plugin-sdk/*;
+    // When the root package is not symlinked as openclaw under node_modules, Vite needs explicit aliases to dist.
     alias: [
       {
         find: /^openclaw\/plugin-sdk\/(.+)$/,

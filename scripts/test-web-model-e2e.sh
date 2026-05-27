@@ -1,31 +1,31 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Web 模型端到端自动化测试
+# Web Model End-to-End Automated Test
 # ============================================================================
-# 完整测试流程：编译 → 启动浏览器调试 → 授权 → 启动网关 → 对每个已授权模型发消息 → 校验回复
+# Full test flow: build → start browser debug → auth → start gateway → send message to each authorized model → verify response
 #
-# 所有端口、配置文件、状态目录均使用 zero-token 独立路径，不与系统 openclaw 混用。
+# All ports, config files, and state directories use zero-token isolated paths, not shared with system openclaw.
 #
-# 用法：
-#   bash scripts/test-web-model-e2e.sh                # 完整流程（含编译）
-#   bash scripts/test-web-model-e2e.sh --skip-build   # 跳过编译
-#   bash scripts/test-web-model-e2e.sh --skip-auth    # 跳过授权（已授权过）
+# Usage:
+#   bash scripts/test-web-model-e2e.sh                # Full flow (with build)
+#   bash scripts/test-web-model-e2e.sh --skip-build   # Skip build
+#   bash scripts/test-web-model-e2e.sh --skip-auth    # Skip auth (already authorized)
 #   bash scripts/test-web-model-e2e.sh --models "qwen-cn-web/Qwen3.5-Plus,deepseek-web/deepseek-chat"
 #   bash scripts/test-web-model-e2e.sh --help
 #
-# 环境变量（可选覆盖）：
-#   ZT_GATEWAY_PORT     网关端口（默认 3001）
-#   ZT_CHROME_PORT      Chrome CDP 端口（默认 9222）
-#   ZT_TIMEOUT          单个模型请求超时秒数（默认 120）
-#   ZT_PROMPT           测试提示词
+# Environment variables (optional override):
+#   ZT_GATEWAY_PORT     Gateway port (default 3001)
+#   ZT_CHROME_PORT      Chrome CDP port (default 9222)
+#   ZT_TIMEOUT          Single model request timeout in seconds (default 120)
+#   ZT_PROMPT           Test prompt
 # ============================================================================
 set -euo pipefail
 
-# ─── 项目路径（zero-token 独立，不混用系统 openclaw） ─────────────
+# ─── Project Paths (zero-token isolated, not shared with system openclaw) ──
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-# zero-token 专属路径
+# zero-token specific paths
 ZT_STATE_DIR="$ROOT/.openclaw-upstream-state"
 ZT_CONFIG_FILE="$ZT_STATE_DIR/openclaw.json"
 ZT_AUTH_FILE="$ZT_STATE_DIR/agents/main/agent/auth-profiles.json"
@@ -33,10 +33,10 @@ ZT_PID_FILE="$ROOT/.gateway-test.pid"
 ZT_GATEWAY_PORT="${ZT_GATEWAY_PORT:-3001}"
 ZT_CHROME_PORT="${ZT_CHROME_PORT:-9222}"
 ZT_TIMEOUT="${ZT_TIMEOUT:-120}"
-ZT_PROMPT="${ZT_PROMPT:-用一句话回答：2+3等于几？只输出数字结果。}"
+ZT_PROMPT="${ZT_PROMPT:-Answer in one sentence: what is 2+3? Output only the number.}"
 ZT_BASE_URL="http://127.0.0.1:${ZT_GATEWAY_PORT}"
 
-# ─── 颜色输出 ─────────────────────────────────────────────────
+# ─── Color Output ─────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -50,7 +50,7 @@ warn()  { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 fail()  { echo -e "${RED}[FAIL]${NC}  $*"; }
 step()  { echo -e "\n${CYAN}══════════════════════════════════════════${NC}"; echo -e "${CYAN}  $*${NC}"; echo -e "${CYAN}══════════════════════════════════════════${NC}"; }
 
-# ─── 参数解析 ─────────────────────────────────────────────────
+# ─── Argument Parsing ─────────────────────────────────────────────────
 SKIP_BUILD=false
 SKIP_AUTH=false
 SKIP_BROWSER=false
@@ -59,31 +59,31 @@ CLEANUP_ON_EXIT=true
 
 show_help() {
   cat <<'HELP'
-Web 模型端到端测试
+Web Model End-to-End Test
 
-用法：bash scripts/test-web-model-e2e.sh [选项]
+Usage: bash scripts/test-web-model-e2e.sh [options]
 
-选项：
-  --skip-build       跳过编译步骤（已编译过）
-  --skip-auth        跳过授权步骤（已授权过）
-  --skip-browser     跳过浏览器启动（已在运行）
-  --models LIST      只测试指定模型，逗号分隔
-                     例: --models "qwen-cn-web/Qwen3.5-Plus,kimi-web/moonshot-v1-32k"
-  --no-cleanup       测试结束后不停止网关
-  --help             显示此帮助
+Options:
+  --skip-build       Skip build step (already built)
+  --skip-auth        Skip auth step (already authorized)
+  --skip-browser     Skip browser launch (already running)
+  --models LIST      Only test specified models, comma-separated
+                     Example: --models "qwen-cn-web/Qwen3.5-Plus,kimi-web/moonshot-v1-32k"
+  --no-cleanup       Don't stop gateway after test
+  --help             Show this help
 
-环境变量：
-  ZT_GATEWAY_PORT    网关端口（默认 3001）
-  ZT_CHROME_PORT     Chrome CDP 端口（默认 9222）
-  ZT_TIMEOUT         单模型超时秒数（默认 120）
-  ZT_PROMPT          测试提示词
+Environment variables:
+  ZT_GATEWAY_PORT    Gateway port (default 3001)
+  ZT_CHROME_PORT     Chrome CDP port (default 9222)
+  ZT_TIMEOUT         Single model timeout in seconds (default 120)
+  ZT_PROMPT          Test prompt
 
-路径说明（zero-token 独立，不混用系统 openclaw）：
-  配置文件    .openclaw-upstream-state/openclaw.json
-  授权凭证    .openclaw-upstream-state/agents/main/agent/auth-profiles.json
-  网关端口    默认 3001（系统 openclaw 用 3000）
-  浏览器数据  ~/Library/Application Support/Chrome-OpenClaw-Debug (mac)
-              ~/.config/chrome-openclaw-debug (linux)
+Path notes (zero-token isolated, not shared with system openclaw):
+  Config file    .openclaw-upstream-state/openclaw.json
+  Auth credentials .openclaw-upstream-state/agents/main/agent/auth-profiles.json
+  Gateway port    Default 3001 (system openclaw uses 3000)
+  Browser data   ~/Library/Application Support/Chrome-OpenClaw-Debug (mac)
+                 ~/.config/chrome-openclaw-debug (linux)
 HELP
   exit 0
 }
@@ -95,10 +95,10 @@ for arg in "$@"; do
     --skip-browser) SKIP_BROWSER=true ;;
     --no-cleanup)   CLEANUP_ON_EXIT=false ;;
     --help|-h)      show_help ;;
-    --models)       :;; # 下一个 arg 是值
+      --models)       :;; # Next arg is the value
     --models=*)     SELECTED_MODELS="${arg#*=}" ;;
     *)
-      # 检查是否是 --models 的值
+      # Check if this is the value of --models
       prev="${*:$((${#@}-1)):1}"
       if [[ "${prev:-}" == "--models" ]]; then
         SELECTED_MODELS="$arg"
@@ -107,7 +107,7 @@ for arg in "$@"; do
   esac
 done
 
-# 更健壮的 --models 解析
+# More robust --models parsing
 i=0
 for arg in "$@"; do
   i=$((i + 1))
@@ -124,110 +124,110 @@ for arg in "$@"; do
   fi
 done
 
-# ─── 前置检查 ─────────────────────────────────────────────────
-step "阶段 0：前置检查"
+# ─── Pre-checks ────────────────────────────────────────────────────
+step "Phase 0: Pre-checks"
 
 check_tool() {
   if ! command -v "$1" >/dev/null 2>&1; then
-    fail "未找到 $1，请先安装"
+    fail "$1 not found, please install it"
     return 1
   fi
-  ok "$1 已安装"
+  ok "$1 is installed"
 }
 
 check_tool node
 check_tool curl
-check_tool jq || warn "未安装 jq，回复校验将降级"
+check_tool jq || warn "jq not installed, response validation will degrade"
 
 NODE="$(command -v node)"
-info "Node 版本: $($NODE --version)"
-info "项目根目录: $ROOT"
-info "状态目录: $ZT_STATE_DIR"
-info "配置文件: $ZT_CONFIG_FILE"
-info "网关端口: $ZT_GATEWAY_PORT"
-info "Chrome CDP 端口: $ZT_CHROME_PORT"
+info "Node version: $($NODE --version)"
+info "Project root: $ROOT"
+info "State directory: $ZT_STATE_DIR"
+info "Config file: $ZT_CONFIG_FILE"
+info "Gateway port: $ZT_GATEWAY_PORT"
+info "Chrome CDP port: $ZT_CHROME_PORT"
 
-# 确保配置文件和状态目录存在
+# Ensure config file and state directory exist
 if [[ ! -f "$ZT_CONFIG_FILE" ]]; then
-  warn "配置文件不存在，将从示例复制"
+  warn "Config file not found, will copy from example"
   mkdir -p "$ZT_STATE_DIR"
   EXAMPLE_CONFIG="$ROOT/.openclaw-state.example/openclaw.json"
   if [[ -f "$EXAMPLE_CONFIG" ]]; then
     cp "$EXAMPLE_CONFIG" "$ZT_CONFIG_FILE"
-    ok "已复制配置: $EXAMPLE_CONFIG → $ZT_CONFIG_FILE"
+    ok "Config copied: $EXAMPLE_CONFIG → $ZT_CONFIG_FILE"
   else
-    fail "示例配置文件不存在: $EXAMPLE_CONFIG"
+    fail "Example config file not found: $EXAMPLE_CONFIG"
     exit 1
   fi
 fi
 
-# 读取 gateway token
+# Read gateway token
 GATEWAY_TOKEN=$(jq -r '.gateway.auth.token // empty' "$ZT_CONFIG_FILE" 2>/dev/null || true)
 if [[ -z "$GATEWAY_TOKEN" ]]; then
-  warn "配置文件中未找到 gateway.auth.token，某些测试可能失败"
+  warn "gateway.auth.token not found in config file, some tests may fail"
   GATEWAY_TOKEN="test-token"
 fi
 
-# ─── 阶段 1：编译 ─────────────────────────────────────────────
+# ─── Phase 1: Build ───────────────────────────────────────────────
 if [[ "$SKIP_BUILD" == true ]]; then
-  step "阶段 1：编译 [已跳过]"
+  step "Phase 1: Build [Skipped]"
 else
-  step "阶段 1：编译项目"
+  step "Phase 1: Build project"
 
-  info "运行 pnpm build ..."
+  info "Running pnpm build ..."
   if pnpm build 2>&1 | tail -5; then
-    ok "编译成功"
+    ok "Build successful"
   else
-    fail "编译失败"
+    fail "Build failed"
     exit 1
   fi
 
-  # 验证编译产物
+  # Verify build artifacts
   if [[ -f "$ROOT/openclaw.mjs" ]]; then
-    ok "入口文件存在: openclaw.mjs"
+    ok "Entry file exists: openclaw.mjs"
   else
-    fail "入口文件不存在: openclaw.mjs"
+    fail "Entry file does not exist: openclaw.mjs"
     exit 1
   fi
 
   if [[ -d "$ROOT/dist" ]]; then
     DIST_FILES=$(find "$ROOT/dist" -name "*.js" | wc -l | tr -d ' ')
-    ok "dist 目录包含 ${DIST_FILES} 个 JS 文件"
+    ok "dist directory contains ${DIST_FILES} JS files"
   else
-    fail "dist 目录不存在"
+    fail "dist directory does not exist"
     exit 1
   fi
 fi
 
-# ─── 阶段 1.5：单元测试 ──────────────────────────────────────
-step "阶段 1.5：Web Stream 单元测试"
+# ─── Phase 1.5: Unit Tests ────────────────────────────────────────
+step "Phase 1.5: Web Stream Unit Tests"
 
 if pnpm exec vitest run --config scripts/vitest.zero-token-web.config.ts 2>&1 | tail -10; then
-  ok "单元测试通过"
+  ok "Unit tests passed"
 else
-  warn "单元测试失败（不阻塞后续测试）"
+  warn "Unit tests failed (does not block subsequent tests)"
 fi
 
-# ─── 阶段 2：启动 Chrome 调试模式 ─────────────────────────────
+# ─── Phase 2: Start Chrome Debug Mode ─────────────────────────────
 if [[ "$SKIP_BROWSER" == true ]]; then
-  step "阶段 2：启动 Chrome 调试模式 [已跳过]"
+  step "Phase 2: Start Chrome Debug Mode [Skipped]"
 else
-  step "阶段 2：启动 Chrome 调试模式"
+  step "Phase 2: Start Chrome Debug Mode"
 
-  # 检查是否已有调试 Chrome 在运行
+  # Check if debug Chrome is already running
   if curl -s "http://127.0.0.1:${ZT_CHROME_PORT}/json/version" > /dev/null 2>&1; then
-    ok "Chrome 调试模式已在运行 (端口 ${ZT_CHROME_PORT})"
+    ok "Chrome debug mode already running (port ${ZT_CHROME_PORT})"
     CHROME_VERSION=$(curl -s "http://127.0.0.1:${ZT_CHROME_PORT}/json/version" | jq -r '.Browser // "unknown"' 2>/dev/null || echo "unknown")
-    info "Chrome 版本: $CHROME_VERSION"
+    info "Chrome version: $CHROME_VERSION"
   else
-    info "启动 Chrome 调试模式..."
+    info "Starting Chrome debug mode..."
     if [[ -x "$ROOT/start-chrome-debug.sh" ]]; then
-      # 在后台启动（脚本会等待 Chrome 就绪后退出）
+      # Launch in background (script waits for Chrome to be ready then exits)
       bash "$ROOT/start-chrome-debug.sh" &
       CHROME_LAUNCHER_PID=$!
 
-      # 等待 Chrome CDP 可用
-      info "等待 Chrome 就绪..."
+      # Wait for Chrome CDP to be available
+      info "Waiting for Chrome to be ready..."
       CHROME_READY=false
       for i in $(seq 1 30); do
         if curl -s "http://127.0.0.1:${ZT_CHROME_PORT}/json/version" > /dev/null 2>&1; then
@@ -238,76 +238,76 @@ else
       done
 
       if [[ "$CHROME_READY" == true ]]; then
-        ok "Chrome 调试模式已启动"
+        ok "Chrome debug mode started"
       else
-        fail "Chrome 启动超时 (30s)"
-        warn "请手动运行: ./start-chrome-debug.sh"
-        warn "然后重新运行本测试并加上 --skip-browser"
+        fail "Chrome startup timed out (30s)"
+        warn "Please run manually: ./start-chrome-debug.sh"
+        warn "Then re-run this test with --skip-browser"
         exit 1
       fi
     else
-      fail "start-chrome-debug.sh 不存在或不可执行"
+      fail "start-chrome-debug.sh does not exist or is not executable"
       exit 1
     fi
   fi
 fi
 
-# ─── 阶段 3：Web 模型授权 ─────────────────────────────────────
+# ─── Phase 3: Web Model Auth ──────────────────────────────────────
 if [[ "$SKIP_AUTH" == true ]]; then
-  step "阶段 3：Web 模型授权 [已跳过]"
+  step "Phase 3: Web Model Auth [Skipped]"
 else
-  step "阶段 3：Web 模型授权检查"
+  step "Phase 3: Web Model Auth Check"
 
   if [[ -f "$ZT_AUTH_FILE" ]]; then
     AUTH_PROFILES=$(jq -r '.profiles | keys[]' "$ZT_AUTH_FILE" 2>/dev/null || true)
     WEB_PROFILES=$(echo "$AUTH_PROFILES" | grep -E ".*-web:" || true)
 
     if [[ -n "$WEB_PROFILES" ]]; then
-      info "已找到以下 Web 模型授权:"
+      info "Found the following Web model authorizations:"
       echo "$WEB_PROFILES" | while read -r profile; do
         ok "  $profile"
       done
     else
-      warn "未找到任何 Web 模型授权"
-      warn "请运行: ./onboard.sh webauth"
-      warn "授权完成后重新运行本测试并加上 --skip-auth"
+      warn "No Web model authorizations found"
+      warn "Please run: ./onboard.sh webauth"
+      warn "After authorization, re-run this test with --skip-auth"
       exit 1
     fi
   else
-    warn "auth-profiles.json 不存在"
-    warn "请先运行: ./onboard.sh webauth"
+    warn "auth-profiles.json not found"
+    warn "Please run: ./onboard.sh webauth first"
     exit 1
   fi
 fi
 
-# ─── 阶段 4：启动网关 ─────────────────────────────────────────
-step "阶段 4：启动网关"
+# ─── Phase 4: Start Gateway ───────────────────────────────────────
+step "Phase 4: Start Gateway"
 
-# 检查网关是否已在运行
+# Check if gateway is already running
 GATEWAY_RUNNING=false
 if curl -s -o /dev/null --connect-timeout 2 "${ZT_BASE_URL}/healthz" 2>/dev/null; then
   GATEWAY_RUNNING=true
-  ok "网关已在运行 (${ZT_BASE_URL})"
+  ok "Gateway already running (${ZT_BASE_URL})"
 elif curl -s -o /dev/null --connect-timeout 2 "${ZT_BASE_URL}/health" 2>/dev/null; then
   GATEWAY_RUNNING=true
-  ok "网关已在运行 (${ZT_BASE_URL})"
+  ok "Gateway already running (${ZT_BASE_URL})"
 fi
 
 if [[ "$GATEWAY_RUNNING" == false ]]; then
-  info "启动网关..."
+  info "Starting gateway..."
 
-  # 确保旧进程已停止
+  # Ensure old process is stopped
   if [[ -f "$ZT_PID_FILE" ]]; then
     OLD_PID=$(cat "$ZT_PID_FILE")
     if kill -0 "$OLD_PID" 2>/dev/null; then
-      info "停止旧网关进程 (PID: $OLD_PID)"
+      info "Stopping old gateway process (PID: $OLD_PID)"
       kill "$OLD_PID" 2>/dev/null || true
       sleep 2
     fi
     rm -f "$ZT_PID_FILE"
   fi
 
-  # zero-token 独立环境变量
+  # zero-token isolated environment variables
   export OPENCLAW_CONFIG_PATH="$ZT_CONFIG_FILE"
   export OPENCLAW_STATE_DIR="$ZT_STATE_DIR"
   export OPENCLAW_GATEWAY_PORT="$ZT_GATEWAY_PORT"
@@ -316,9 +316,9 @@ if [[ "$GATEWAY_RUNNING" == false ]]; then
   nohup "$NODE" "$ROOT/openclaw.mjs" gateway --port "$ZT_GATEWAY_PORT" > "$GW_LOG" 2>&1 &
   GW_PID=$!
   echo "$GW_PID" > "$ZT_PID_FILE"
-  info "网关 PID: $GW_PID, 日志: $GW_LOG"
+  info "Gateway PID: $GW_PID, log: $GW_LOG"
 
-  # 等待就绪
+  # Wait for readiness
   GW_READY=false
   for i in $(seq 1 30); do
     if curl -s -o /dev/null --connect-timeout 1 "${ZT_BASE_URL}/" 2>/dev/null; then
@@ -326,7 +326,7 @@ if [[ "$GATEWAY_RUNNING" == false ]]; then
       break
     fi
     if ! kill -0 $GW_PID 2>/dev/null; then
-      fail "网关进程退出，查看日志: $GW_LOG"
+      fail "Gateway process exited, check log: $GW_LOG"
       tail -20 "$GW_LOG" 2>/dev/null || true
       exit 1
     fi
@@ -334,33 +334,33 @@ if [[ "$GATEWAY_RUNNING" == false ]]; then
   done
 
   if [[ "$GW_READY" == true ]]; then
-    ok "网关已就绪 (${i}s)"
+    ok "Gateway ready (${i}s)"
   else
-    fail "网关启动超时 (30s)，查看日志: $GW_LOG"
+    fail "Gateway startup timed out (30s), check log: $GW_LOG"
     tail -30 "$GW_LOG" 2>/dev/null || true
     exit 1
   fi
 fi
 
-# 健康检查
+# Health check
 HEALTH_CODE=$(curl -sS -o /tmp/zt-e2e-health.json -w "%{http_code}" "${ZT_BASE_URL}/healthz" 2>/dev/null || echo "000")
 if [[ "$HEALTH_CODE" != "200" ]]; then
   HEALTH_CODE=$(curl -sS -o /tmp/zt-e2e-health.json -w "%{http_code}" "${ZT_BASE_URL}/health" 2>/dev/null || echo "000")
 fi
 
 if [[ "$HEALTH_CODE" == "200" ]]; then
-  ok "健康检查通过 (HTTP $HEALTH_CODE)"
+  ok "Health check passed (HTTP $HEALTH_CODE)"
 else
-  fail "健康检查失败 (HTTP $HEALTH_CODE)"
+  fail "Health check failed (HTTP $HEALTH_CODE)"
   cat /tmp/zt-e2e-health.json 2>/dev/null || true
   exit 1
 fi
 
 
-# ─── 阶段 5+：运行 E2E 测试 Runner ─────────────────────────────
-step "阶段 5：运行 E2E 测试 (L2 + L3 + L5)"
+# ─── Phase 5+: Run E2E Test Runner ────────────────────────────────
+step "Phase 5: Run E2E Tests (L2 + L3 + L5)"
 
-# 传递环境变量给 TypeScript runner
+# Pass environment variables to TypeScript runner
 export ZT_GATEWAY_PORT="$ZT_GATEWAY_PORT"
 export ZT_CHROME_PORT="$ZT_CHROME_PORT"
 export ZT_TIMEOUT="$ZT_TIMEOUT"
@@ -371,7 +371,7 @@ if [[ -n "$SELECTED_MODELS" ]]; then
   export ZT_MODELS="$SELECTED_MODELS"
 fi
 
-# 支持跳过特定层级
+# Support skipping specific layers
 for arg in "$@"; do
   case "$arg" in
     --skip-l2) export ZT_SKIP_L2=1 ;;
@@ -380,33 +380,33 @@ for arg in "$@"; do
   esac
 done
 
-info "调用 TypeScript E2E Runner..."
-info "  L2 HTTP:       ${ZT_SKIP_L2:+跳过}${ZT_SKIP_L2:-启用}"
-info "  L3 WebSocket:  ${ZT_SKIP_L3:+跳过}${ZT_SKIP_L3:-启用}"
-info "  L5 Browser UI: ${ZT_SKIP_L5:+跳过}${ZT_SKIP_L5:-启用}"
+info "Invoking TypeScript E2E Runner..."
+info "  L2 HTTP:       ${ZT_SKIP_L2:+Skipped}${ZT_SKIP_L2:-Enabled}"
+info "  L3 WebSocket:  ${ZT_SKIP_L3:+Skipped}${ZT_SKIP_L3:-Enabled}"
+info "  L5 Browser UI: ${ZT_SKIP_L5:+Skipped}${ZT_SKIP_L5:-Enabled}"
 echo ""
 
 RUNNER_EXIT=0
 "$NODE" --import tsx "$ROOT/scripts/test-web-e2e-runner.ts" || RUNNER_EXIT=$?
 
-# ─── 清理 ─────────────────────────────────────────────────────
+# ─── Cleanup ─────────────────────────────────────────────────────
 if [[ "$CLEANUP_ON_EXIT" == true && -f "$ZT_PID_FILE" ]]; then
   GW_PID=$(cat "$ZT_PID_FILE" 2>/dev/null || true)
   if [[ -n "$GW_PID" ]] && kill -0 "$GW_PID" 2>/dev/null; then
-    info "停止测试网关 (PID: $GW_PID)"
+    info "Stopping test gateway (PID: $GW_PID)"
     kill "$GW_PID" 2>/dev/null || true
     rm -f "$ZT_PID_FILE"
   fi
 fi
 
-# 输出路径确认
+# Output path confirmation
 echo ""
-info "路径确认（zero-token 独立，未混用系统 openclaw）:"
-info "  配置文件:   $ZT_CONFIG_FILE"
-info "  授权凭证:   $ZT_AUTH_FILE"
-info "  网关端口:   $ZT_GATEWAY_PORT"
-info "  Chrome 端口: $ZT_CHROME_PORT"
-info "  状态目录:   $ZT_STATE_DIR"
-info "  报告目录:   $ZT_REPORT_DIR"
+info "Path confirmation (zero-token isolated, not shared with system openclaw):"
+info "  Config file:   $ZT_CONFIG_FILE"
+info "  Auth credentials: $ZT_AUTH_FILE"
+info "  Gateway port:   $ZT_GATEWAY_PORT"
+info "  Chrome port:   $ZT_CHROME_PORT"
+info "  State directory: $ZT_STATE_DIR"
+info "  Report directory: $ZT_REPORT_DIR"
 
 exit $RUNNER_EXIT

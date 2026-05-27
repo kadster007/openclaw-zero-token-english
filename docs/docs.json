@@ -1443,22 +1443,22 @@
         "language": "zh-Hans",
         "tabs": [
           {
-            "tab": "快速开始",
+            "tab": "Quick Start",
             "groups": [
               {
-                "group": "首页",
+                "group": "Home",
                 "pages": ["zh-CN/index"]
               },
               {
-                "group": "概览",
+                "group": "Overview",
                 "pages": ["zh-CN/start/showcase"]
               },
               {
-                "group": "核心概念",
+                "group": "Core Concepts",
                 "pages": ["zh-CN/concepts/features"]
               },
               {
-                "group": "第一步",
+                "group": "First Steps",
                 "pages": [
                   "zh-CN/start/getting-started",
                   "zh-CN/start/wizard",
@@ -1466,20 +1466,20 @@
                 ]
               },
               {
-                "group": "指南",
+                "group": "Guide",
                 "pages": ["zh-CN/start/openclaw"]
               }
             ]
           },
           {
-            "tab": "安装",
+            "tab": "Installation",
             "groups": [
               {
-                "group": "安装概览",
+                "group": "Installation Overview",
                 "pages": ["zh-CN/install/index", "zh-CN/install/installer"]
               },
               {
-                "group": "安装方式",
+                "group": "Installation Methods",
                 "pages": [
                   "zh-CN/install/docker",
                   "zh-CN/install/nix",
@@ -1488,7 +1488,7 @@
                 ]
               },
               {
-                "group": "维护",
+                "group": "Maintenance",
                 "pages": [
                   "zh-CN/install/updating",
                   "zh-CN/install/migrating",
@@ -1496,7 +1496,7 @@
                 ]
               },
               {
-                "group": "托管与部署",
+                "group": "Hosting & Deployment",
                 "pages": [
                   "zh-CN/vps",
                   "zh-CN/install/fly",
@@ -1510,20 +1510,20 @@
                 ]
               },
               {
-                "group": "高级",
+                "group": "Advanced",
                 "pages": ["zh-CN/install/development-channels"]
               }
             ]
           },
           {
-            "tab": "消息渠道",
+            "tab": "Messaging Channels",
             "groups": [
               {
-                "group": "概览",
+                "group": "Overview",
                 "pages": ["zh-CN/channels/index"]
               },
               {
-                "group": "消息平台",
+                "group": "Messaging Platforms",
                 "pages": [
                   "zh-CN/channels/bluebubbles",
                   "zh-CN/channels/discord",
@@ -1548,7 +1548,7 @@
                 ]
               },
               {
-                "group": "配置",
+                "group": "Configuration",
                 "pages": [
                   "zh-CN/channels/pairing",
                   "zh-CN/channels/group-messages",
@@ -1562,10 +1562,10 @@
             ]
           },
           {
-            "tab": "代理",
+            "tab": "Agent",
             "groups": [
               {
-                "group": "基础",
+                "group": "Basics",
                 "pages": [
                   "zh-CN/pi",
                   "zh-CN/concepts/architecture",
@@ -1578,11 +1578,11 @@
                 ]
               },
               {
-                "group": "引导",
+                "group": "Bootstrapping",
                 "pages": ["zh-CN/start/bootstrapping"]
               },
               {
-                "group": "会话与记忆",
+                "group": "Sessions & Memory",
                 "pages": [
                   "zh-CN/concepts/session",
                   "zh-CN/concepts/session-pruning",
@@ -1592,11 +1592,11 @@
                 ]
               },
               {
-                "group": "多代理",
+                "group": "Multi-Agent",
                 "pages": ["zh-CN/concepts/multi-agent", "zh-CN/concepts/presence"]
               },
               {
-                "group": "消息与投递",
+                "group": "Messages & Delivery",
                 "pages": [
                   "zh-CN/concepts/messages",
                   "zh-CN/concepts/streaming",
@@ -1607,14 +1607,14 @@
             ]
           },
           {
-            "tab": "工具",
+            "tab": "Tools",
             "groups": [
               {
-                "group": "概览",
+                "group": "Overview",
                 "pages": ["zh-CN/tools/index"]
               },
               {
-                "group": "内置工具",
+                "group": "Built-in Tools",
                 "pages": [
                   "zh-CN/tools/apply-patch",
                   "zh-CN/brave-search",
@@ -1632,7 +1632,7 @@
                 ]
               },
               {
-                "group": "浏览器",
+                "group": "Browser",
                 "pages": [
                   "zh-CN/tools/browser",
                   "zh-CN/tools/browser-login",
@@ -1641,7 +1641,7 @@
                 ]
               },
               {
-                "group": "代理协作",
+                "group": "Agent Collaboration",
                 "pages": [
                   "zh-CN/tools/agent-send",
                   "zh-CN/tools/subagents",
@@ -1649,7 +1649,7 @@
                 ]
               },
               {
-                "group": "技能",
+                "group": "Skills",
                 "pages": [
                   "zh-CN/tools/creating-skills",
                   "zh-CN/tools/slash-commands",
@@ -1660,7 +1660,7 @@
                 ]
               },
               {
-                "group": "扩展",
+                "group": "Extensions",
                 "pages": [
                   "zh-CN/plugins/voice-call",
                   "zh-CN/plugins/zalouser",
@@ -1670,7 +1670,7 @@
                 ]
               },
               {
-                "group": "自动化",
+                "group": "Automation",
                 "pages": [
                   "zh-CN/automation/hooks",
                   "zh-CN/automation/cron-jobs",
@@ -1683,7 +1683,7 @@
                 ]
               },
               {
-                "group": "媒体与设备",
+                "group": "Media & Devices",
                 "pages": [
                   "zh-CN/nodes/index",
                   "zh-CN/nodes/troubleshooting",
@@ -1700,22 +1700,22 @@
             ]
           },
           {
-            "tab": "模型",
+            "tab": "Models",
             "groups": [
               {
-                "group": "概览",
+                "group": "Overview",
                 "pages": ["zh-CN/providers/index", "zh-CN/providers/models"]
               },
               {
-                "group": "模型概念",
+                "group": "Model Concepts",
                 "pages": ["zh-CN/concepts/models"]
               },
               {
-                "group": "配置",
+                "group": "Configuration",
                 "pages": ["zh-CN/concepts/model-providers", "zh-CN/concepts/model-failover"]
               },
               {
-                "group": "提供商",
+                "group": "Providers",
                 "pages": [
                   "zh-CN/providers/anthropic",
                   "zh-CN/providers/bedrock",
@@ -1741,10 +1741,10 @@
             ]
           },
           {
-            "tab": "平台",
+            "tab": "Platforms",
             "groups": [
               {
-                "group": "平台概览",
+                "group": "Platform Overview",
                 "pages": [
                   "zh-CN/platforms/index",
                   "zh-CN/platforms/macos",
@@ -1758,7 +1758,7 @@
                 ]
               },
               {
-                "group": "macOS 配套应用",
+                "group": "macOS Companion Apps",
                 "pages": [
                   "zh-CN/platforms/mac/dev-setup",
                   "zh-CN/platforms/mac/menu-bar",
@@ -1783,14 +1783,14 @@
             ]
           },
           {
-            "tab": "网关与运维",
+            "tab": "Gateway & Operations",
             "groups": [
               {
-                "group": "网关",
+                "group": "Gateway",
                 "pages": [
                   "zh-CN/gateway/index",
                   {
-                    "group": "配置与运维",
+                    "group": "Configuration & Operations",
                     "pages": [
                       "zh-CN/gateway/configuration",
                       "zh-CN/gateway/configuration-examples",
@@ -1806,7 +1806,7 @@
                     ]
                   },
                   {
-                    "group": "安全与沙箱",
+                    "group": "Security & Sandbox",
                     "pages": [
                       "zh-CN/gateway/security/index",
                       "zh-CN/gateway/sandboxing",
@@ -1814,7 +1814,7 @@
                     ]
                   },
                   {
-                    "group": "协议与 API",
+                    "group": "Protocols & API",
                     "pages": [
                       "zh-CN/gateway/protocol",
                       "zh-CN/gateway/bridge-protocol",
@@ -1826,7 +1826,7 @@
                     ]
                   },
                   {
-                    "group": "网络与发现",
+                    "group": "Networking & Discovery",
                     "pages": [
                       "zh-CN/gateway/network-model",
                       "zh-CN/gateway/pairing",
@@ -1837,7 +1837,7 @@
                 ]
               },
               {
-                "group": "远程访问",
+                "group": "Remote Access",
                 "pages": [
                   "zh-CN/gateway/remote",
                   "zh-CN/gateway/remote-gateway-readme",
@@ -1845,15 +1845,15 @@
                 ]
               },
               {
-                "group": "运维专题",
+                "group": "Operations Topics",
                 "pages": ["zh-CN/network", "zh-CN/logging"]
               },
               {
-                "group": "安全",
+                "group": "Security",
                 "pages": ["zh-CN/security/formal-verification"]
               },
               {
-                "group": "Web 界面",
+                "group": "Web Interface",
                 "pages": [
                   "zh-CN/web/index",
                   "zh-CN/web/control-ui",
@@ -1865,10 +1865,10 @@
             ]
           },
           {
-            "tab": "参考",
+            "tab": "Reference",
             "groups": [
               {
-                "group": "CLI 命令",
+                "group": "CLI Commands",
                 "pages": [
                   "zh-CN/cli/index",
                   "zh-CN/cli/acp",
@@ -1914,11 +1914,11 @@
                 ]
               },
               {
-                "group": "RPC 与 API",
+                "group": "RPC & API",
                 "pages": ["zh-CN/reference/rpc", "zh-CN/reference/device-models"]
               },
               {
-                "group": "模板",
+                "group": "Templates",
                 "pages": [
                   "zh-CN/reference/AGENTS.default",
                   "zh-CN/reference/templates/AGENTS",
@@ -1932,7 +1932,7 @@
                 ]
               },
               {
-                "group": "技术参考",
+                "group": "Technical Reference",
                 "pages": [
                   "zh-CN/reference/wizard",
                   "zh-CN/reference/token-use",
@@ -1942,7 +1942,7 @@
                 ]
               },
               {
-                "group": "概念内部机制",
+                "group": "Concepts Internals",
                 "pages": [
                   "zh-CN/concepts/typebox",
                   "zh-CN/concepts/markdown-formatting",
@@ -1952,15 +1952,15 @@
                 ]
               },
               {
-                "group": "项目",
+                "group": "Project",
                 "pages": ["zh-CN/reference/credits"]
               },
               {
-                "group": "发布说明",
+                "group": "Release Notes",
                 "pages": ["zh-CN/reference/RELEASING", "zh-CN/reference/test"]
               },
               {
-                "group": "实验性功能",
+                "group": "Experimental Features",
                 "pages": [
                   "zh-CN/experiments/onboarding-config-protocol",
                   "zh-CN/experiments/plans/openresponses-gateway",
@@ -1971,7 +1971,7 @@
                 ]
               },
               {
-                "group": "重构方案",
+                "group": "Refactoring Plans",
                 "pages": [
                   "zh-CN/refactor/clawnet",
                   "zh-CN/refactor/exec-host",
@@ -1983,18 +1983,18 @@
             ]
           },
           {
-            "tab": "帮助",
+            "tab": "Help",
             "groups": [
               {
-                "group": "帮助",
+                "group": "Help",
                 "pages": ["zh-CN/help/index", "zh-CN/help/troubleshooting", "zh-CN/help/faq"]
               },
               {
-                "group": "社区",
+                "group": "Community",
                 "pages": ["zh-CN/start/lore"]
               },
               {
-                "group": "环境与调试",
+                "group": "Environment & Debugging",
                 "pages": [
                   "zh-CN/help/environment",
                   "zh-CN/help/debugging",
@@ -2005,19 +2005,19 @@
                 ]
               },
               {
-                "group": "Node 运行时",
+                "group": "Node Runtime",
                 "pages": ["zh-CN/install/node"]
               },
               {
-                "group": "压缩机制内部参考",
+                "group": "Compaction Internals",
                 "pages": ["zh-CN/reference/session-management-compaction"]
               },
               {
-                "group": "开发者设置",
+                "group": "Developer Setup",
                 "pages": ["zh-CN/start/setup", "zh-CN/pi-dev"]
               },
               {
-                "group": "文档元信息",
+                "group": "Documentation Metadata",
                 "pages": ["zh-CN/start/hubs", "zh-CN/start/docs-directory", "zh-CN/AGENTS"]
               }
             ]

@@ -4,7 +4,7 @@ import { runOnboardWebAuth } from "../../commands/onboard-web-auth.js";
 export function registerOnboardWebAuthCommand(program: Command) {
   program
     .command("webauth")
-    .description("Web 模型授权向导 - 授权 Claude/ChatGPT/DeepSeek 等无需 API Key 的 Web 模型")
+    .description("Web model auth wizard - authorize Claude/ChatGPT/DeepSeek and other API-key-free Web models")
     .action(async () => {
       await runOnboardWebAuth();
       // Playwright browser connections and timers keep the process alive.

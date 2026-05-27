@@ -1,250 +1,250 @@
-# 安装指南
+# Installation Guide
 
-## 📋 前置要求
+## 📋 Prerequisites
 
-### 必需软件
+### Required Software
 
-1. **Node.js** (v22.12 或更高版本)
+1. **Node.js** (v22.12 or higher)
 
    ```bash
    node --version
-   # 应该显示 v22.12.x 或更高
+   # Should show v22.12.x or higher
    ```
 
-2. **npm** (通常随 Node.js 一起安装)
+2. **npm** (usually installed with Node.js)
 
    ```bash
    npm --version
-   # 应该显示 8.x.x 或更高
+   # Should show 8.x.x or higher
    ```
 
-3. **pnpm** (用于构建 Web UI)
+3. **pnpm** (for building Web UI)
 
    ```bash
    pnpm --version
-   # 如果未安装，可执行：
+   # If not installed, run:
    # corepack enable
    # corepack prepare pnpm@latest --activate
    ```
 
-4. **Google Chrome** (用于调试浏览器)
-   - macOS: 已安装
+4. **Google Chrome** (for debug browser)
+   - macOS: Already installed
    - Linux: `sudo apt install google-chrome-stable`
-   - Windows: 下载安装
+   - Windows: Download and install
 
-### Shell 环境说明（Windows 用户必读）
+### Shell Environment Notes (Windows Users Must Read)
 
-- `onboard.sh` / `server.sh` / `start-chrome-debug.sh` 需要在 **Bash 环境**运行。
-- Windows 推荐使用 **WSL**（优先）或 **Git Bash**。
-- 纯 `cmd.exe` / 原生 PowerShell 不能直接执行 `.sh` 脚本。
+- `onboard.sh` / `server.sh` / `start-chrome-debug.sh` must be run in a **Bash environment**.
+- Windows: **WSL** is recommended (preferred) or **Git Bash**.
+- Plain `cmd.exe` / native PowerShell cannot execute `.sh` scripts directly.
 
-### 可选软件
+### Optional Software
 
-- **Git** (用于克隆代码)
+- **Git** (for cloning code)
   ```bash
   git --version
   ```
 
 ---
 
-## 🚀 安装步骤
+## 🚀 Installation Steps
 
-### 步骤 1：克隆或下载代码
+### Step 1: Clone or Download Code
 
-**使用 Git**：
+**Using Git**:
 
 ```bash
 git clone <repository-url>
 cd openclaw-zero-token
 ```
 
-**或者直接下载**：
+**Or download directly**:
 
-- 下载 ZIP 文件
-- 解压到目录
-- 进入目录
+- Download the ZIP file
+- Extract to a directory
+- Enter the directory
 
 ---
 
-### 步骤 2：安装依赖
+### Step 2: Install Dependencies
 
 ```bash
 npm install
 ```
 
-**预期输出**：
+**Expected output**:
 
 ```
 added 500+ packages in 30s
 ```
 
-**如果遇到错误**：
+**If you encounter errors**:
 
 ```bash
-# 清理缓存
+# Clear cache
 npm cache clean --force
 
-# 删除 node_modules 和 package-lock.json
+# Remove node_modules and package-lock.json
 rm -rf node_modules package-lock.json
 
-# 重新安装
+# Reinstall
 npm install
 ```
 
 ---
 
-### 步骤 3：编译代码
+### Step 3: Compile Code
 
 ```bash
 npm run build
-pnpm ui:build   # 构建 Web UI，访问 http://127.0.0.1:3001 时需要
+pnpm ui:build   # Build Web UI, required when visiting http://127.0.0.1:3001
 ```
 
-**预期输出**：
+**Expected output**:
 
 ```
 ✔ Build complete in 7919ms
 ✓ built in 1.13s   # ui:build
 ```
 
-**验证编译成功**：
+**Verify compilation succeeded**:
 
 ```bash
 ls dist/index.mjs
-ls dist/control-ui/index.html   # Web UI 资源
-# 应该看到文件存在
+ls dist/control-ui/index.html   # Web UI resources
+# Should see the file exists
 ```
 
 ---
 
-### 步骤 4：验证安装
+### Step 4: Verify Installation
 
 ```bash
-# 检查编译后的文件
+# Check compiled files
 ls -lh dist/index.mjs
 
-# 应该看到类似输出：
+# Should see output similar to:
 # -rw-r--r--  1 user  staff   2.5M Feb 27 10:00 dist/index.mjs
 ```
 
 ---
 
-## 🔧 配置环境
+## 🔧 Configure Environment
 
-### 创建配置目录
+### Create Configuration Directory
 
-配置目录会在首次运行时自动创建（推荐，不需要手动创建）：
+The configuration directory is created automatically on first run (recommended, no need to create manually):
 
 ```bash
 ./onboard.sh webauth
 ```
 
-### 检查配置文件
+### Check Configuration Files
 
 ```bash
-# 查看配置文件（如果存在）
+# View config file (if exists)
 cat .openclaw-zero-state/openclaw.json
 
-# 查看认证配置（如果存在）
+# View auth config (if exists)
 cat .openclaw-zero-state/agents/main/agent/auth-profiles.json
 ```
 
-> 关键规则：只有在 `./onboard.sh webauth` 中完成配置的平台，才会被写入 `openclaw.json` 并出现在最终 `/models` 列表中。
+> Key rule: Only the platforms configured in `./onboard.sh webauth` will be written into `openclaw.json` and appear in the final `/models` list.
 
 ---
 
-## ✅ 安装完成检查清单
+## ✅ Installation Completion Checklist
 
-- [ ] Node.js 已安装（v22.12+）
-- [ ] npm 已安装
-- [ ] pnpm 已安装
-- [ ] 依赖已安装（`npm install`）
-- [ ] 代码已编译（`npm run build`）
-- [ ] `dist/index.mjs` 文件存在
-- [ ] Google Chrome 已安装
-
----
-
-## 🎯 下一步
-
-安装完成后，继续阅读：
-
-1. **START_HERE.md** - 快速开始指南
-2. **TEST_STEPS.md** - 详细测试步骤
+- [ ] Node.js installed (v22.12+)
+- [ ] npm installed
+- [ ] pnpm installed
+- [ ] Dependencies installed (`npm install`)
+- [ ] Code compiled (`npm run build`)
+- [ ] `dist/index.mjs` file exists
+- [ ] Google Chrome installed
 
 ---
 
-## 🔧 常见问题
+## 🎯 Next Steps
 
-### Q1: npm install 失败
+After installation, continue reading:
 
-**A**: 尝试以下方法：
+1. **START_HERE.md** - Quick Start Guide
+2. **TEST_STEPS.md** - Detailed Test Steps
+
+---
+
+## 🔧 Frequently Asked Questions
+
+### Q1: npm install fails
+
+**A**: Try the following:
 
 ```bash
-# 使用国内镜像（如果在中国）
+# Use domestic mirror (if in China)
 npm config set registry https://registry.npmmirror.com
 
-# 重新安装
+# Reinstall
 npm install
 ```
 
-### Q2: npm run build 失败
+### Q2: npm run build fails
 
-**A**: 检查 Node.js 版本：
+**A**: Check Node.js version:
 
 ```bash
 node --version
-# 必须是 v22.12 或更高
+# Must be v22.12 or higher
 
-# 如果版本太低，升级 Node.js
+# If version is too low, upgrade Node.js
 ```
 
-### Q3: 权限错误
+### Q3: Permission errors
 
-**A**: 不要使用 sudo：
+**A**: Do not use sudo:
 
 ```bash
-# 错误：sudo npm install
-# 正确：npm install
+# Wrong: sudo npm install
+# Correct: npm install
 ```
 
-### Q4: 磁盘空间不足
+### Q4: Insufficient disk space
 
-**A**: 检查磁盘空间：
+**A**: Check disk space:
 
 ```bash
 df -h
 
-# node_modules 大约需要 500MB
-# dist 大约需要 10MB
+# node_modules requires approximately 500MB
+# dist requires approximately 10MB
 ```
 
 ---
 
-## 📚 相关命令
+## 📚 Related Commands
 
 ```bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 编译代码
+# Build code
 npm run build
 
-# 清理编译产物
+# Clean build artifacts
 rm -rf dist
 
-# 重新编译
+# Rebuild
 npm run build
 
-# 查看 npm 脚本
+# View npm scripts
 npm run
 
-# 检查依赖版本
+# Check dependency versions
 npm list --depth=0
 ```
 
 ---
 
-## 🎉 安装成功！
+## 🎉 Installation Complete!
 
-现在你可以开始测试了。继续阅读 **START_HERE.md** 开始测试流程。
+Now you can start testing. Continue reading **START_HERE.md** to begin the testing process.

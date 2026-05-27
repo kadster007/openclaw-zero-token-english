@@ -1,5 +1,5 @@
 /**
- * AskOnce 模块导出
+ * AskOnce module exports
  */
 
 export * from "./types.js";

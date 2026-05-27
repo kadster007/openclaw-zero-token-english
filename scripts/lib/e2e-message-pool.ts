@@ -4,16 +4,16 @@
  */
 
 const CN_MESSAGES = [
-  "请帮我用简单的语言解释一下什么是量子计算",
-  "写一首关于春天的五言绝句",
-  "北京有哪些适合周末去的公园？推荐三个",
-  "帮我把这段话改得更正式一些：我觉得这个方案还行",
-  "简单介绍一下光合作用的过程",
-  "推荐三本适合初学者的Python编程书籍",
-  "中国传统节日春节有哪些习俗？简要说明",
-  "请解释一下TCP和UDP的主要区别",
-  "帮我写一段面试自我介绍，要求简洁有力",
-  "描述一下你理解的人工智能的发展趋势",
+  "Please explain quantum computing in simple terms",
+  "Write a five-character quatrain about spring",
+  "What are three parks in Beijing suitable for a weekend visit?",
+  "Make this paragraph more formal: I think this plan is okay",
+  "Briefly describe the process of photosynthesis",
+  "Recommend three Python programming books for beginners",
+  "What are the customs of the Spring Festival? Briefly explain",
+  "Please explain the main differences between TCP and UDP",
+  "Write a concise and impactful self-introduction for a job interview",
+  "Describe your understanding of the development trends in artificial intelligence",
 ];
 
 const EN_MESSAGES = [

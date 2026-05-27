@@ -1,17 +1,17 @@
 #!/bin/bash
-# OpenClaw Gateway service launcher
-# Compatible with macOS / Linux (incl. Deepin) / Windows (Git Bash / WSL)
+# OpenClaw Gateway service startup script
+# Compatible with macOS / Linux (including Deepin) / Windows (Git Bash / WSL)
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 STATE_DIR="$SCRIPT_DIR/.openclaw-upstream-state"
 CONFIG_FILE="$STATE_DIR/openclaw.json"
 PID_FILE="$SCRIPT_DIR/.gateway.pid"
-PORT=18789
+PORT=3001
 
-# Log file prefix (to distinguish multiple instances)
+# Log file name (distinguish different instances)
 LOG_PREFIX="openclaw-upstream"
 
-# ─── Environment detection ───────────────────────────────────
+# ─── Environment Detection ────────────────────────────────────────
 detect_os() {
   case "$OSTYPE" in
     darwin*)  echo "mac" ;;
@@ -39,7 +39,7 @@ detect_node() {
   echo ""
 }
 
-# Find the PID listening on a given port (cross-platform)
+# Query PID occupying a specific port (cross-platform)
 port_pid() {
   local port=$1
   if command -v lsof >/dev/null 2>&1; then
@@ -52,7 +52,7 @@ port_pid() {
   fi
 }
 
-# Open URL in default browser (cross-platform)
+# Open browser (cross-platform)
 open_browser() {
   local url=$1
   case "$OS" in
@@ -63,13 +63,13 @@ open_browser() {
       if command -v xdg-open >/dev/null 2>&1; then
         xdg-open "$url" 2>/dev/null &
       else
-        echo "Please open this URL manually in your browser: $url"
+        echo "Please open in browser: $url"
       fi
       ;;
   esac
 }
 
-# Temp log path (Windows may not have /tmp)
+# Temporary log path (Windows may not have /tmp)
 tmp_log() {
   if [ -d /tmp ]; then
     echo "/tmp/openclaw-upstream-gateway.log"
@@ -84,11 +84,11 @@ LOG_FILE="$SCRIPT_DIR/logs/openclaw-upstream.log"
 TMP_LOG=$(tmp_log)
 
 if [ -z "$NODE" ]; then
-  echo "✗ node not found. Please install Node.js first: https://nodejs.org"
+  echo "✗ Node not found, please install Node.js: https://nodejs.org"
   exit 1
 fi
 
-# ─── Initialization ──────────────────────────────────────────
+# ─── Initialization ────────────────────────────────────────────────
 mkdir -p "$STATE_DIR"
 mkdir -p "$SCRIPT_DIR/logs"
 
@@ -99,22 +99,22 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "Copied config from example: $EXAMPLE_CONFIG -> $CONFIG_FILE"
   else
     echo '{}' > "$CONFIG_FILE"
-    echo "Created empty config: $CONFIG_FILE (recommend copying the full config from .openclaw-state.example/openclaw.json)"
+    echo "Created empty config file: $CONFIG_FILE (recommend copying full config from .openclaw-state.example/openclaw.json)"
   fi
 fi
 
-# Read token from config dynamically; fall back to env var
+# Read token from config file dynamically, fall back to environment variable
 GATEWAY_TOKEN=$(jq -r '.gateway.auth.token // empty' "$CONFIG_FILE" 2>/dev/null)
 if [ -z "$GATEWAY_TOKEN" ]; then
   GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-}"
 fi
 
-# ─── Functions ───────────────────────────────────────────────
+# ─── Functions ────────────────────────────────────────────────────
 stop_gateway() {
   if [ -f "$PID_FILE" ]; then
     OLD_PID=$(cat "$PID_FILE")
     if kill -0 "$OLD_PID" 2>/dev/null; then
-      echo "Stopping previous process (PID: $OLD_PID)..."
+      echo "Stopping old process (PID: $OLD_PID)..."
       kill "$OLD_PID" 2>/dev/null
       sleep 1
       if kill -0 "$OLD_PID" 2>/dev/null; then
@@ -126,7 +126,7 @@ stop_gateway() {
 
   PORT_PID=$(port_pid "$PORT")
   if [ -n "$PORT_PID" ]; then
-    echo "Stopping process holding port $PORT (PID: $PORT_PID)..."
+    echo "Stopping process occupying port $PORT (PID: $PORT_PID)..."
     kill "$PORT_PID" 2>/dev/null
     sleep 1
   fi
@@ -155,12 +155,12 @@ start_gateway() {
   while [ $i -lt 30 ]; do
     i=$((i + 1))
     if curl -s -o /dev/null --connect-timeout 1 "http://127.0.0.1:$PORT/" 2>/dev/null; then
-      echo "Gateway is ready (${i}s)"
+      echo "Gateway ready (${i}s)"
       WEBUI_READY=1
       break
     fi
     if ! kill -0 $GATEWAY_PID 2>/dev/null; then
-      echo "Gateway process exited; startup failed"
+      echo "Gateway process exited, startup failed"
       cat "$TMP_LOG"
       rm -f "$PID_FILE"
       exit 1
@@ -170,7 +170,7 @@ start_gateway() {
 
   if kill -0 $GATEWAY_PID 2>/dev/null; then
     if [ "$WEBUI_READY" -eq 0 ]; then
-      echo "⚠ curl check did not succeed; Gateway may not be ready yet — please open the Web UI manually shortly"
+      echo "⚠ curl check did not succeed, Gateway may not be ready yet. Please open Web UI manually later."
     fi
     WEBUI_URL="http://127.0.0.1:$PORT/#token=${GATEWAY_TOKEN}"
     echo "Gateway service started (PID: $GATEWAY_PID)"
@@ -179,10 +179,10 @@ start_gateway() {
       echo "Opening browser..."
       open_browser "$WEBUI_URL"
     else
-      echo "Please open the URL above in your browser manually"
+      echo "Please manually open the address above in your browser"
     fi
   else
-    echo "Gateway service failed to start. See log:"
+    echo "Gateway service failed to start. Check the log:"
     cat "$TMP_LOG"
     rm -f "$PID_FILE"
     exit 1
@@ -190,19 +190,19 @@ start_gateway() {
 }
 
 update_cookie() {
-  echo "Updating Claude Web cookie..."
+  echo "Updating Claude Web Cookie..."
 
   if [ -z "$2" ]; then
-    echo "Error: please provide the full cookie string"
-    echo "Usage: $0 update-cookie \"<full cookie string>\""
+    echo "Error: Please provide the full cookie string"
+    echo "Usage: $0 update-cookie \"full-cookie-string\""
     echo ""
-    echo "How to get the cookie from your browser:"
+    echo "Get cookie from browser:"
     echo "1. Open https://claude.ai"
-    echo "2. Press F12 to open DevTools"
-    echo "3. Switch to the Network tab"
+    echo "2. Press F12 to open Developer Tools"
+    echo "3. Switch to Network tab"
     echo "4. Send a message"
-    echo "5. Find the 'completion' request"
-    echo "6. Copy the full cookie value from the Request Headers"
+    echo "5. Find the completion request"
+    echo "6. Copy the full cookie value from Request Headers"
     exit 1
   fi
 
@@ -212,7 +212,7 @@ update_cookie() {
   SESSION_KEY=$(echo "$COOKIE_STRING" | grep -oP 'sessionKey=\K[^;]+' || echo "")
 
   if [ -z "$SESSION_KEY" ]; then
-    echo "Error: no sessionKey found in cookie"
+    echo "Error: sessionKey not found in cookie"
     exit 1
   fi
 
@@ -233,12 +233,12 @@ EOF
     echo "Now restart the service:"
     echo "  $0 restart"
   else
-    echo "Error: auth-profiles.json does not exist. Run ./onboard.sh first"
+    echo "Error: auth-profiles.json not found. Please run ./onboard.sh first"
     exit 1
   fi
 }
 
-# ─── Entry point ─────────────────────────────────────────────
+# ─── Entrypoint ───────────────────────────────────────────────────
 case "${1:-start}" in
   start)
     stop_gateway
@@ -256,17 +256,17 @@ case "${1:-start}" in
     if [ -f "$PID_FILE" ]; then
       PID=$(cat "$PID_FILE")
       if kill -0 "$PID" 2>/dev/null; then
-        echo "Gateway service is running (PID: $PID)"
+        echo "Gateway service running (PID: $PID)"
         echo "Web UI: http://127.0.0.1:$PORT/#token=${GATEWAY_TOKEN}"
       else
-        echo "Gateway service is not running (PID file exists but process has exited)"
+        echo "Gateway service not running (PID file exists but process exited)"
       fi
     else
       PORT_PID=$(port_pid "$PORT")
       if [ -n "$PORT_PID" ]; then
-        echo "Port $PORT is held by process $PORT_PID, but it was not started by this script"
+        echo "Port $PORT is occupied by process $PORT_PID, but not a Gateway started by this script"
       else
-        echo "Gateway service is not running"
+        echo "Gateway service not running"
       fi
     fi
     ;;
@@ -277,11 +277,11 @@ case "${1:-start}" in
     echo "Usage: $0 {start|stop|restart|status|update-cookie}"
     echo ""
     echo "Commands:"
-    echo "  start         - Start the Gateway service"
-    echo "  stop          - Stop the Gateway service"
-    echo "  restart       - Restart the Gateway service"
-    echo "  status        - Show service status"
-    echo "  update-cookie - Update the Claude Web cookie"
+    echo "  start         - Start Gateway service"
+    echo "  stop          - Stop Gateway service"
+    echo "  restart       - Restart Gateway service"
+    echo "  status        - Check service status"
+    echo "  update-cookie - Update Claude Web cookie"
     echo ""
     echo "Example:"
     echo "  $0 update-cookie \"sessionKey=sk-ant-...; anthropic-device-id=...\""

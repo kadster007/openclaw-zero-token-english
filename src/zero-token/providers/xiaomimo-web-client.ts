@@ -35,11 +35,11 @@ export class XiaomiMimoWebClient {
   }
 
   private fetchHeaders() {
-    // 提取 serviceToken 作为 Bearer token
+    // Extract serviceToken as Bearer token
     const serviceTokenMatch = this.cookie.match(/serviceToken="([^"]*)"/);
     const serviceToken = serviceTokenMatch?.[1] || "";
 
-    // 提取 xiaomichatbot_ph
+    // Extract xiaomichatbot_ph
     const botPhMatch = this.cookie.match(/xiaomichatbot_ph="([^"]*)"/);
     const botPh = botPhMatch?.[1] || "";
 
@@ -64,7 +64,7 @@ export class XiaomiMimoWebClient {
   }): Promise<ReadableStream<Uint8Array> | null> {
     const headers = this.fetchHeaders();
 
-    // 提取 xiaomichatbot_ph 作为 URL 参数
+    // Extract xiaomichatbot_ph as URL parameter
     const botPhMatch = this.cookie.match(/xiaomichatbot_ph="([^"]*)"/);
     const botPh = botPhMatch?.[1] || "";
 

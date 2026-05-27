@@ -1,5 +1,5 @@
 /**
- * JSON 输出格式化
+ * JSON output formatter
  */
 
 import type { QueryResult } from "../types.js";

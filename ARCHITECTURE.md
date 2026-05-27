@@ -1,52 +1,52 @@
-# OpenClaw / openclaw-zero-token CLI 架构流程
+# OpenClaw / openclaw-zero-token CLI Architecture Flow
 
-本文档描述本仓库中 **命令行入口** 到 **子命令执行** 的主路径，便于对照源码（`openclaw.mjs`、`entry.ts`、`cli/`）。与上游 OpenClaw 大架构说明见根目录 `ARCHITECTURE.md`。
+This document describes the main path from **command line entry** to **subcommand execution** in this repository, for reference against the source code (`openclaw.mjs`, `entry.ts`, `cli/`). For the upstream OpenClaw high-level architecture overview, see the root `ARCHITECTURE.md`.
 
-## 图表说明
+## Diagram Notes
 
-- **实线**：主流程；**虚线**：按需加载（懒注册子命令）或异步分支。
-- **退出码**：`0` 成功；`1` 一般错误（校验失败、运行失败）；`2` 根级参数解析错误（如 `--container` / `--profile` 组合非法）；Node 版本过低时 `openclaw.mjs` 直接 `exit(1)`。
-- **Zero Token**：`onboard` / `configure` 等流程可触发 `src/zero-token/providers/*` 与 Playwright/CDP，向各厂商 **网页 API** 发起请求；凭证落盘于状态目录下的 `auth.json` 等（勿提交版本库）。
+- **Solid lines**: main flow; **Dashed lines**: on-demand loading (lazy subcommand registration) or async branches.
+- **Exit codes**: `0` success; `1` general error (validation failure, runtime failure); `2` root-level argument parsing error (e.g., invalid `--container` / `--profile` combination); if Node version is too low, `openclaw.mjs` directly calls `exit(1)`.
+- **Zero Token**: `onboard` / `configure` and similar flows can trigger `src/zero-token/providers/*` with Playwright/CDP to send requests to various vendors' **web APIs**; credentials are saved as `auth.json` etc. in the state directory (do not commit to version control).
 
 ```mermaid
 flowchart TD
-  subgraph Entry["入口"]
-    A["openclaw.mjs<br/>校验 Node >= 22.12"] --> B{"dist/entry.(m)js 存在?"}
-    B -->|否| E1["报错: missing dist/entry<br/>exit 1"]
-    B -->|是| C["entry.js: normalize argv<br/>可选 respawn 子进程"]
+  subgraph Entry["Entry"]
+    A["openclaw.mjs<br/>Verify Node >= 22.12"] --> B{"dist/entry.(m)js exists?"}
+    B -->|No| E1["Error: missing dist/entry<br/>exit 1"]
+    B -->|Yes| C["entry.js: normalize argv<br/>optional respawn child process"]
   end
 
-  C --> D{"容器模式<br/>--container?"}
-  D -->|解析失败| X2["stderr 提示<br/>exit 2"]
-  D -->|是| DC["Podman/Docker 内<br/>再执行 CLI"]
-  D -->|否| P{"--profile / --dev?"}
-  P -->|解析失败| X2
-  P -->|是| PE["写入 profile 隔离<br/>STATE/CONFIG 环境变量"]
-  P -->|否| V{"仅 --version / -V / -v ?"}
-  V -->|是| VF["输出版本 + 可选 commit<br/>exit 0"]
-  V -->|否| H{"仅 --help / -h ?"}
-  H -->|是| HF["outputRootHelp<br/>exit 0"]
-  H -->|否| R["runCli: Commander 程序"]
+  C --> D{"Container mode<br/>--container?"}
+  D -->|Parse failed| X2["stderr prompt<br/>exit 2"]
+  D -->|Yes| DC["Inside Podman/Docker<br/>re-execute CLI"]
+  D -->|No| P{"--profile / --dev?"}
+  P -->|Parse failed| X2
+  P -->|Yes| PE["Write profile isolation<br/>STATE/CONFIG env vars"]
+  P -->|No| V{"Only --version / -V / -v?"}
+  V -->|Yes| VF["Output version + optional commit<br/>exit 0"]
+  V -->|No| H{"Only --help / -h?"}
+  H -->|Yes| HF["outputRootHelp<br/>exit 0"]
+  H -->|No| R["runCli: Commander Program"]
 
   subgraph Run["runCli / Commander"]
-    R --> PL["插件发现与注册<br/>（extensions / plugins.allow）"]
-    PL --> REG["registerProgramCommands<br/>核心命令占位 + 懒加载"]
-    REG --> DISPATCH{"匹配子命令"}
+    R --> PL["Plugin discovery & registration<br/>(extensions / plugins.allow)"]
+    PL --> REG["registerProgramCommands<br/>Core command placeholders + lazy loading"]
+    REG --> DISPATCH{"Match subcommand"}
   end
 
-  DISPATCH -->|onboard / configure / setup| WZ["向导 + 配置写入<br/>openclaw.json / auth"]
-  DISPATCH -->|gateway / daemon| GW["网关进程 / RPC<br/>WebSocket + HTTP"]
-  DISPATCH -->|agent / tui| AG["经 Gateway 或 TUI<br/>调用模型与工具"]
-  DISPATCH -->|models / channels / ...| SUB["各 cli/* 模块<br/>读配置 / 调服务"]
-  DISPATCH -->|doctor| DOC["健康检查与修复建议<br/>可 exit 0 但含告警"]
-  DISPATCH -->|未知或参数错误| ERR["Commander 错误信息<br/>通常 exit 1"]
+  DISPATCH -->|onboard / configure / setup| WZ["Wizard + config write<br/>openclaw.json / auth"]
+  DISPATCH -->|gateway / daemon| GW["Gateway process / RPC<br/>WebSocket + HTTP"]
+  DISPATCH -->|agent / tui| AG["Via Gateway or TUI<br/>Call models & tools"]
+  DISPATCH -->|models / channels / ...| SUB["Each cli/* module<br/>Read config / Call services"]
+  DISPATCH -->|doctor| DOC["Health check & repair suggestions<br/>Can exit 0 but with warnings"]
+  DISPATCH -->|Unknown or param error| ERR["Commander error info<br/>Usually exit 1"]
 
-  WZ --> BROWSER["Playwright / Chrome CDP<br/>（Zero Token 网页登录）"]
-  WZ --> FS1["文件 I/O: 配置与 auth 存储"]
-  GW --> NET["本机端口 / 对外 HTTP"]
+  WZ --> BROWSER["Playwright / Chrome CDP<br/>(Zero Token web login)"]
+  WZ --> FS1["File I/O: config & auth storage"]
+  GW --> NET["Local port / External HTTP"]
   AG --> NET
-  AG --> API["Provider: 网页 API 或<br/>OpenAI 兼容 / 本地 Ollama 等"]
-  SUB --> FS2["读写配置与状态目录"]
+  AG --> API["Provider: web API or<br/>OpenAI compatible / local Ollama etc."]
+  SUB --> FS2["Read/write config & state directory"]
   SUB --> NET
 
   style E1 fill:#f99
@@ -56,13 +56,13 @@ flowchart TD
   style HF fill:#9f9
 ```
 
-## 与源码的对应关系
+## Source Code Map
 
-| 阶段                      | 主要文件                                                               |
+| Phase | Main File |
 | ------------------------- | ---------------------------------------------------------------------- |
-| 引导包装                  | `openclaw.mjs`                                                         |
-| 进程入口、版本/帮助快路径 | `entry.ts`                                                             |
-| CLI 主循环                | `cli/run-main.ts` → `cli/program/*`                                    |
-| 核心子命令注册            | `cli/program/command-registry.ts`                                      |
-| 扩展子命令                | `cli/program/register.subclis.ts`、`cli/program/subcli-descriptors.ts` |
-| Zero Token 网页侧         | `src/zero-token/providers/`、`src/zero-token/streams/`                 |
+| Bootstrap wrapper | `openclaw.mjs` |
+| Process entry, version/help fast path | `entry.ts` |
+| CLI main loop | `cli/run-main.ts` → `cli/program/*` |
+| Core subcommand registration | `cli/program/command-registry.ts` |
+| Extension subcommands | `cli/program/register.subclis.ts`、`cli/program/subcli-descriptors.ts` |
+| Zero Token web side | `src/zero-token/providers/`、`src/zero-token/streams/` |

@@ -1,92 +1,92 @@
 /**
- * AskOnce 类型定义
+ * AskOnce type definitions
  */
 
 import type { Readable } from "node:stream";
 
 /**
- * 模型响应结果
+ * Model response result
  */
 export interface ModelResponse {
-  /** 模型标识 */
+  /** Model ID */
   modelId: string;
-  /** 模型显示名称 */
+  /** Model display name */
   modelName: string;
-  /** 提供商标识 */
+  /** Provider ID */
   provider: string;
-  /** 响应状态 */
+  /** Response status */
   status: "pending" | "streaming" | "completed" | "error" | "timeout";
-  /** 响应文本内容 */
+  /** Response text content */
   content: string;
-  /** 错误信息 (如果失败) */
+  /** Error message (if failed) */
   error?: string;
-  /** 响应时间 (毫秒) */
+  /** Response time (milliseconds) */
   responseTime: number;
-  /** 字符数 */
+  /** Character count */
   charCount: number;
-  /** 时间戳 */
+  /** Timestamp */
   timestamp: number;
 }
 
 /**
- * 查询选项
+ * Query options
  */
 export interface QueryOptions {
-  /** 问题内容 */
+  /** Question content */
   question: string;
-  /** 选择的模型列表 (默认全部) */
+  /** Selected model list (default all) */
   models?: string[];
-  /** 超时时间 (毫秒, 默认 60000) */
+  /** Timeout (milliseconds, default 60000) */
   timeout?: number;
-  /** 最大重试次数 (默认 2) */
+  /** Maximum retry count (default 2) */
   maxRetries?: number;
-  /** 是否流式输出 */
+  /** Whether to use streaming output */
   stream?: boolean;
-  /** 系统提示词 */
+  /** System prompt */
   systemPrompt?: string;
 }
 
 /**
- * 查询结果
+ * Query result
  */
 export interface QueryResult {
-  /** 查询 ID */
+  /** Query ID */
   queryId: string;
-  /** 原始问题 */
+  /** Original question */
   question: string;
-  /** 开始时间 */
+  /** Start time */
   startTime: number;
-  /** 结束时间 */
+  /** End time */
   endTime: number;
-  /** 总耗时 */
+  /** Total duration */
   totalTime: number;
-  /** 所有模型响应 */
+  /** All model responses */
   responses: ModelResponse[];
-  /** 成功数量 */
+  /** Success count */
   successCount: number;
-  /** 失败数量 */
+  /** Error count */
   errorCount: number;
 }
 
 /**
- * 模型适配器接口
+ * Model adapter interface
  */
 export interface ModelAdapter {
-  /** 适配器标识 */
+  /** Adapter ID */
   id: string;
-  /** 显示名称 */
+  /** Display name */
   name: string;
-  /** 提供商 */
+  /** Provider */
   provider: string;
-  /** 支持的模型列表 */
+  /** Supported model list */
   models: string[];
-  /** 默认模型 */
+  /** Default model */
   defaultModel: string;
-  /** 检查适配器是否可用 (已认证) */
+  /** Check if adapter is available (authenticated) */
   isAvailable(): Promise<boolean>;
-  /** 执行查询 */
+  /** Execute a query */
   query(question: string, options?: AdapterQueryOptions): Promise<ModelResponse>;
-  /** 流式查询 */
+  /** Streaming query */
   queryStream?(
     question: string,
     options: AdapterQueryOptions,
@@ -95,28 +95,28 @@ export interface ModelAdapter {
 }
 
 /**
- * 适配器查询选项
+ * Adapter query options
  */
 export interface AdapterQueryOptions {
-  /** 模型 ID */
+  /** Model ID */
   modelId?: string;
-  /** 超时时间 */
+  /** Timeout */
   timeout?: number;
-  /** 系统提示词 */
+  /** System prompt */
   systemPrompt?: string;
   /** AbortSignal */
   signal?: AbortSignal;
 }
 
 /**
- * 进度事件
+ * Progress event
  */
 export interface ProgressEvent {
-  /** 事件类型 */
+  /** Event type */
   type: "start" | "progress" | "complete" | "error";
-  /** 模型 ID */
+  /** Model ID */
   modelId: string;
-  /** 进度数据 */
+  /** Progress data */
   data?: {
     content?: string;
     delta?: string;
@@ -126,12 +126,12 @@ export interface ProgressEvent {
 }
 
 /**
- * 进度回调函数
+ * Progress callback function
  */
 export type ProgressCallback = (event: ProgressEvent) => void;
 
 /**
- * 流式事件类型
+ * Stream event types
  */
 export interface StreamEvent {
   type: "text_delta" | "text_start" | "thinking_delta" | "thinking_start" | "done" | "error";
@@ -142,24 +142,24 @@ export interface StreamEvent {
 }
 
 /**
- * 流适配器接口
+ * Stream adapter interface
  */
 export interface StreamAdapter {
-  /** 流式查询 */
+  /** Streaming query */
   queryStream(question: string, options: AdapterQueryOptions): ReadableStream<StreamEvent>;
 }
 
 /**
- * 配置选项
+ * Configuration options
  */
 export interface AskOnceConfig {
-  /** 默认超时时间 (毫秒) */
+  /** Default timeout (milliseconds) */
   timeout: number;
-  /** 最大重试次数 */
+  /** Maximum retry count */
   maxRetries: number;
-  /** 并发限制 */
+  /** Concurrency limit */
   concurrencyLimit: number;
-  /** 默认模型列表 */
+  /** Default model list */
   defaultModels: string[];
 }
 

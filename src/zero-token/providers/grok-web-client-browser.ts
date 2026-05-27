@@ -118,8 +118,8 @@ export class GrokWebClientBrowser {
   }
 
   /**
-   * DOM 模拟：通过真实浏览器交互发送消息，绕过 403 anti-bot
-   * 参考 ChatGPT Web 的 chatCompletionsViaDOM 实现
+   * DOM simulation: send messages through real browser interaction, bypassing 403 anti-bot
+   * Reference ChatGPT Web's chatCompletionsViaDOM implementation
    */
   private async chatCompletionsViaDOM(params: {
     message: string;
@@ -146,7 +146,7 @@ export class GrokWebClientBrowser {
       }
     }
     if (!inputHandle) {
-      throw new Error("Grok DOM 模拟失败: 找不到输入框");
+      throw new Error("Grok DOM simulation failed: input field not found");
     }
 
     // Use Playwright native APIs for reliable input
@@ -165,7 +165,7 @@ export class GrokWebClientBrowser {
 
     for (let elapsed = 0; elapsed < maxWaitMs; elapsed += pollIntervalMs) {
       if (signal?.aborted) {
-        throw new Error("Grok 请求已取消");
+        throw new Error("Grok request cancelled");
       }
 
       await new Promise((r) => setTimeout(r, pollIntervalMs));
@@ -231,7 +231,7 @@ export class GrokWebClientBrowser {
 
     if (!lastText) {
       throw new Error(
-        "Grok DOM 模拟：未检测到回复。请确保 grok.com 页面已打开、已登录，且输入框可见。",
+        "Grok DOM simulation: no reply detected. Please ensure grok.com is open, logged in, and the input box is visible.",
       );
     }
 
@@ -258,7 +258,7 @@ export class GrokWebClientBrowser {
 
     const { conversationId, parentResponseId, message, model } = params;
     console.log(
-      `[Grok Web Browser] Sending request... conversationId=${conversationId ?? "(将从页面或 API 获取)"} messageLen=${message.length}`,
+      `[Grok Web Browser] Sending request... conversationId=${conversationId ?? "(will be obtained from page or API)"} messageLen=${message.length}`,
     );
 
     const evalPromise = this.page.evaluate(
@@ -297,9 +297,9 @@ export class GrokWebClientBrowser {
           }
         }
 
-        // 如果没有现有对话，创建一个新对话
+        // If no existing conversation, create a new one
         if (!convId) {
-          console.log("[Grok] 没有现有对话，创建新对话...");
+          console.log("[Grok] No existing conversation, creating new one...");
           const createRes = await fetch("https://grok.com/rest/app-chat/conversations", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -310,14 +310,14 @@ export class GrokWebClientBrowser {
             const createData = await createRes.json();
             convId = createData?.conversationId ?? createData?.id ?? null;
             if (convId) {
-              console.log(`[Grok] 新对话创建成功: ${convId}`);
+              console.log(`[Grok] New conversation created: ${convId}`);
             }
           }
         }
 
         if (!convId) {
           throw new Error(
-            `需要 conversationId。当前页面: ${window.location.href}。请先在 grok.com 中打开或新建一个对话（点击 New chat），再重试。`,
+            `conversationId required. Current page: ${window.location.href}. Please open or create a new conversation on grok.com (click New chat) and try again.`,
           );
         }
 
@@ -403,7 +403,7 @@ export class GrokWebClientBrowser {
           () =>
             reject(
               new Error(
-                `Grok 请求超时（${timeoutMs / 1000}秒）。请确保 grok.com 已登录且页面可访问。`,
+                `Grok request timed out (${timeoutMs / 1000} seconds). Please ensure grok.com is logged in and accessible.`,
               ),
             ),
           timeoutMs,
@@ -413,7 +413,7 @@ export class GrokWebClientBrowser {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("403") || msg.includes("anti-bot")) {
         console.log(
-          "[Grok Web Browser] 403 anti-bot 触发，切换到 DOM 模拟（由真实浏览器交互发起，不易触发风控）",
+          "[Grok Web Browser] 403 anti-bot triggered, switching to DOM simulation (initiated by real browser interaction, less likely to trigger risk control)",
         );
         return this.chatCompletionsViaDOM({
           message: params.message,

@@ -1,5 +1,5 @@
 /**
- * 适配器注册表
+ * Adapter registry
  */
 
 import type { ModelAdapter } from "../types.js";
@@ -15,15 +15,15 @@ import { QwenCNAdapter } from "./qwen-cn.js";
 import { QwenAdapter } from "./qwen.js";
 
 /**
- * 适配器注册表
- * 管理所有可用的模型适配器
+ * Adapter registry
+ * Manages all available model adapters
  */
 export class AdapterRegistry {
   private adapters: Map<string, ModelAdapter> = new Map();
   private initialized = false;
 
   constructor() {
-    // 注册所有 Web 模型适配器
+    // Register all Web model adapters
     this.register(new ClaudeAdapter());
     this.register(new ChatGPTAdapter());
     this.register(new GeminiAdapter());
@@ -38,28 +38,28 @@ export class AdapterRegistry {
   }
 
   /**
-   * 注册适配器
+   * Register an adapter
    */
   register(adapter: ModelAdapter): void {
     this.adapters.set(adapter.id, adapter);
   }
 
   /**
-   * 获取所有适配器
+   * Get all adapters
    */
   getAllAdapters(): ModelAdapter[] {
     return Array.from(this.adapters.values());
   }
 
   /**
-   * 根据 ID 获取适配器
+   * Get adapter by ID
    */
   getAdapterById(id: string): ModelAdapter | undefined {
     return this.adapters.get(id);
   }
 
   /**
-   * 根据多个 ID 获取适配器
+   * Get adapters by multiple IDs
    */
   getAdaptersByIds(ids: string[]): ModelAdapter[] {
     return ids
@@ -68,14 +68,14 @@ export class AdapterRegistry {
   }
 
   /**
-   * 获取所有适配器 ID
+   * Get all adapter IDs
    */
   getAdapterIds(): string[] {
     return Array.from(this.adapters.keys());
   }
 
   /**
-   * 获取可用的适配器列表
+   * Get available adapters list
    */
   async getAvailableAdapters(): Promise<ModelAdapter[]> {
     const adapters = this.getAllAdapters();
@@ -90,11 +90,11 @@ export class AdapterRegistry {
   }
 }
 
-// 单例实例
+// Singleton instance
 let registryInstance: AdapterRegistry | null = null;
 
 /**
- * 获取适配器注册表单例
+ * Get adapter registry singleton
  */
 export function getAdapterRegistry(): AdapterRegistry {
   if (!registryInstance) {

@@ -1,5 +1,5 @@
 /**
- * GLM (智谱) Web 适配器
+ * GLM Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class GLMAdapter extends BaseAdapter {
   readonly provider = "zhipuai";
   readonly models = ["glm"];
   readonly defaultModel = "glm";
-  // GLM Web 实际使用的模型 ID
+  // Actual model ID used by GLM Web
   private readonly actualModelId = "glm-4-plus";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class GLMAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "GLM Web 未认证，请先运行 openclaw onboard glm-web",
+          "GLM Web not authenticated, please run openclaw onboard glm-web first",
           startTime,
         );
       }

@@ -1,5 +1,5 @@
 /**
- * 格式化器导出
+ * Formatter exports
  */
 
 export { ConsoleFormatter } from "./console.js";

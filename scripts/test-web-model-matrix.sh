@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Web 模型 HTTP 冒烟矩阵：对若干 provider 各发一条 /v1/chat/completions（等同 Web UI 选模型后走 OpenAI 兼容入口）。
-# 已排除（你已验证）：claude-web、gemini-web、deepseek-web、doubao-web、glm-web、glm-intl-web、xiaomimo-web
-# 依赖：网关已启动 + 各 provider 已完成 onboard；环境变量见下文。
+# Web Model HTTP smoke test matrix: send one /v1/chat/completions per provider (equivalent to selecting a model in Web UI via OpenAI compatible entry).
+# Excluded (already verified): claude-web, gemini-web, deepseek-web, doubao-web, glm-web, glm-intl-web, xiaomimo-web
+# Dependencies: Gateway started + each provider onboarded; environment variables below.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -15,41 +15,41 @@ for arg in "$@"; do
   case "$arg" in
     --unit-only) UNIT_ONLY=true ;;
     *)
-      echo "未知参数: $arg（支持 --unit-only：只跑离线 Vitest）" >&2
+      echo "Unknown argument: $arg (supports --unit-only: only run offline Vitest)" >&2
       exit 2
       ;;
   esac
 done
 
-echo "==> [矩阵-阶段 1] Zero Token web stream 单元测试"
+echo "==> [Matrix-Phase 1] Zero Token web stream unit tests"
 pnpm exec vitest run --config scripts/vitest.zero-token-web.config.ts
 
 if [[ "$UNIT_ONLY" == true ]]; then
-  echo "已使用 --unit-only，跳过 HTTP 矩阵。"
+  echo "Using --unit-only, skipping HTTP matrix."
   exit 0
 fi
 
 if [[ -z "${WEB_MODEL_TEST_URL:-}" || -z "${WEB_MODEL_TEST_TOKEN:-}" ]]; then
-  echo ""
-  echo "未设置 WEB_MODEL_TEST_URL / WEB_MODEL_TEST_TOKEN，跳过 HTTP 活测矩阵。"
-  echo "要跑完整矩阵，请设置后重试，例如："
-  echo "  export WEB_MODEL_TEST_URL=http://127.0.0.1:3001"
-  echo "  export WEB_MODEL_TEST_TOKEN=<gateway.auth.token>"
-  echo "  bash scripts/test-web-model-matrix.sh"
+echo ""
+echo "WEB_MODEL_TEST_URL / WEB_MODEL_TEST_TOKEN not set, skipping HTTP live test matrix."
+echo "To run the full matrix, set them and retry, e.g.:"
+echo "  export WEB_MODEL_TEST_URL=http://127.0.0.1:3001"
+echo "  export WEB_MODEL_TEST_TOKEN=<gateway.auth.token>"
+echo "  bash scripts/test-web-model-matrix.sh"
   exit 0
 fi
 
 BASE="${WEB_MODEL_TEST_URL%/}"
-PROMPT="${WEB_MODEL_TEST_PROMPT:-用一句话回答：2+3=? 只输出数字。}"
+PROMPT="${WEB_MODEL_TEST_PROMPT:-Answer in one sentence: what is 2+3=? Output only the number.}"
 
 echo ""
-echo "==> [矩阵-健康检查] ${BASE}/healthz"
+echo "==> [Matrix-Health Check] ${BASE}/healthz"
 code="$(curl -sS -o /tmp/openclaw-mx-health.json -w "%{http_code}" "${BASE}/healthz" || true)"
 if [[ "$code" != "200" ]]; then
   code="$(curl -sS -o /tmp/openclaw-mx-health.json -w "%{http_code}" "${BASE}/health" || true)"
 fi
 if [[ "$code" != "200" ]]; then
-  echo "网关不可达 (http=$code)，跳过矩阵。" >&2
+  echo "Gateway unreachable (http=$code), skipping matrix." >&2
   cat /tmp/openclaw-mx-health.json 2>/dev/null || true
   exit 1
 fi
@@ -58,7 +58,7 @@ echo "health OK"
 failed=0
 for model in "${WEB_MODEL_MATRIX_ENTRIES[@]}"; do
   echo ""
-  echo "==> [矩阵] model=${model}"
+  echo "==> [Matrix] model=${model}"
   BODY="$(MODEL_JSON="$model" PROMPT_JSON="$PROMPT" node -e '
 const model = process.env.MODEL_JSON;
 const prompt = process.env.PROMPT_JSON;
@@ -83,19 +83,19 @@ console.log(JSON.stringify({
   if command -v jq >/dev/null 2>&1; then
     content="$(jq -r '.choices[0].message.content // empty' /tmp/openclaw-mx-chat.json)"
     if [[ -z "${content// }" ]]; then
-      echo "  FAIL 200 但 content 为空" >&2
+      echo "  FAIL 200 but content is empty" >&2
       failed=$((failed + 1))
       continue
     fi
-    echo "  OK 回复节选: ${content:0:120}$([[ ${#content} -gt 120 ]] && echo ...)"
+    echo "  OK reply excerpt: ${content:0:120}$([[ ${#content} -gt 120 ]] && echo ...)"
   else
-    echo "  OK (未装 jq，未校验 content)"
+    echo "  OK (jq not installed, content not validated)"
   fi
 done
 
 echo ""
 if [[ "$failed" -gt 0 ]]; then
-  echo "矩阵完成：${#WEB_MODEL_MATRIX_ENTRIES[@]} 项中 ${failed} 项失败。" >&2
+  echo "Matrix complete: ${failed} of ${#WEB_MODEL_MATRIX_ENTRIES[@]} entries failed." >&2
   exit 1
 fi
-echo "矩阵完成：${#WEB_MODEL_MATRIX_ENTRIES[@]} 项全部通过。"
+echo "Matrix complete: all ${#WEB_MODEL_MATRIX_ENTRIES[@]} entries passed."

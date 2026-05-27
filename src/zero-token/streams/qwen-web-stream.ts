@@ -18,7 +18,7 @@ export function createQwenWebStreamFn(cookieOrJson: string): StreamFn {
   let options: QwenWebClientOptions;
   try {
     const parsed = JSON.parse(cookieOrJson);
-    // 支持完整选项或仅 cookie
+    // Support full options or just cookie
     if (typeof parsed === "string") {
       options = { sessionToken: parsed, cookie: parsed, userAgent: "Mozilla/5.0" };
     } else {
@@ -29,7 +29,7 @@ export function createQwenWebStreamFn(cookieOrJson: string): StreamFn {
       };
     }
   } catch {
-    // 如果不是 JSON，直接作为 sessionToken/cookie 使用
+    // If not JSON, use directly as sessionToken/cookie
     options = { sessionToken: cookieOrJson, cookie: cookieOrJson, userAgent: "Mozilla/5.0" };
   }
   const client = new QwenWebClientBrowser(options);

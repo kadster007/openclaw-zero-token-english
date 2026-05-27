@@ -108,7 +108,7 @@ export function registerOnboardCommand(program: Command) {
 
   command
     .command("webauth")
-    .description("Web 模型授权向导 - 授权 Claude/ChatGPT/DeepSeek 等无需 API Key 的 Web 模型")
+    .description("Web model auth wizard - authorize Claude/ChatGPT/DeepSeek and other API-key-free Web models")
     .action(async () => {
       await runOnboardWebAuth();
     });

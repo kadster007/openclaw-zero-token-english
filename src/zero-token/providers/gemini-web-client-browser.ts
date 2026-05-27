@@ -116,7 +116,7 @@ export class GeminiWebClientBrowser {
   }
 
   /**
-   * DOM 模拟：通过真实浏览器交互发送消息，绕过 Bard RPC 协议复杂度
+   * DOM simulation: send messages through real browser interaction, bypassing Bard RPC protocol complexity
    */
   private async chatCompletionsViaDOM(params: {
     message: string;
@@ -145,7 +145,7 @@ export class GeminiWebClientBrowser {
       }
     }
     if (!inputHandle) {
-      throw new Error("Gemini DOM 模拟失败: 找不到输入框");
+      throw new Error("Gemini DOM simulation failed: input field not found");
     }
 
     // Use Playwright native APIs for reliable input
@@ -156,7 +156,7 @@ export class GeminiWebClientBrowser {
     await page.keyboard.press("Enter");
     console.log("[Gemini Web Browser] DOM: typed message and pressed Enter");
 
-    console.log("[Gemini Web Browser] DOM 模拟已发送，轮询等待回复...");
+    console.log("[Gemini Web Browser] DOM simulation sent, polling for reply...");
 
     const maxWaitMs = 120000;
     const pollIntervalMs = 2000;
@@ -166,22 +166,22 @@ export class GeminiWebClientBrowser {
 
     for (let elapsed = 0; elapsed < maxWaitMs; elapsed += pollIntervalMs) {
       if (signal?.aborted) {
-        throw new Error("Gemini 请求已取消");
+        throw new Error("Gemini request cancelled");
       }
 
       await new Promise((r) => setTimeout(r, pollIntervalMs));
 
       const result = await this.page.evaluate(() => {
-        // 清理不可见 Unicode 字符
+        // Clean invisible Unicode characters
         const clean = (t: string) => t.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 
-        // 使用 innerText（排除隐藏元素和 CSS 控制的不可见内容）而非 textContent
+        // Use innerText (excludes hidden elements and CSS-controlled invisible content) instead of textContent
         const getText = (el: Element): string => {
           const raw = (el as HTMLElement).innerText ?? "";
           return clean(raw);
         };
 
-        // 排除区域检测
+        // Excluded area detection
         const sidebarRoot = document.querySelector('[aria-label*="对话"], [class*="sidebar"], nav');
         const inputEl = document.querySelector(
           '[contenteditable="true"], textarea, [placeholder*="Gemini"], [placeholder*="问问"]',
@@ -193,38 +193,36 @@ export class GeminiWebClientBrowser {
 
         const isExcluded = (el: Element) => sidebarRoot?.contains(el) || inputRoot?.contains(el);
 
-        // 噪声文本过滤
+        // Noise text filtering
         const noisePatterns = [
           "Ask Gemini",
-          "问问 Gemini",
           "Enter a prompt",
-          "输入提示",
-          "需要我为你做些什么",
-          "发起新对话",
-          "我的内容",
-          "设置和帮助",
-          "制作图片",
-          "创作音乐",
-          "帮我学习",
-          "随便写点什么",
-          "给我的一天注入活力",
-          "升级到 Google AI Plus",
-          "正在加载",
-          "复制",
-          "分享",
-          "修改",
-          "朗读",
+          "Upgrade to Google AI Plus",
+          "Loading",
+          "Copy",
+          "Share",
+          "Modify",
+          "Read aloud",
+          "What can I help you with",
+          "Start new chat",
+          "My content",
+          "Settings and help",
+          "Create image",
+          "Create music",
+          "Help me learn",
+          "Write something",
+          "Energize my day",
         ];
         const isNoise = (t: string) =>
           t.length < 20 ||
           noisePatterns.some((p) => t.includes(p)) ||
-          /^(你好|需要我|sage)/i.test(t);
+          /^(hello|help|sage)/i.test(t);
 
-        // 去除回复中的 UI 按钮文字（如 "复制 分享 修改 朗读" 等尾部噪声）
+        // Remove UI button text from replies (such as "Copy Share Modify Read aloud" etc. trailing noise)
         const stripTrailingUI = (t: string) =>
           t
             .replace(
-              /\n?\s*(复制|分享|修改|朗读|Copy|Share|Edit|Read aloud|thumb_up|thumb_down|more_vert)[\s\n]*/gi,
+              /\n?\s*(Copy|Share|Modify|Read aloud|thumb_up|thumb_down|more_vert)[\s\n]*/gi,
               "",
             )
             .replace(/\s+$/, "");
@@ -238,7 +236,7 @@ export class GeminiWebClientBrowser {
 
         let text = "";
 
-        // 策略 1：精确匹配 Gemini 模型回复容器（只取最后一条）
+        // Strategy 1: Exact match Gemini model response container (only take the last one)
         const modelSelectors = [
           "model-response message-content", // Gemini 2025+ web component
           '[data-message-author="model"] .message-content',
@@ -252,7 +250,7 @@ export class GeminiWebClientBrowser {
 
         for (const sel of modelSelectors) {
           const els = scoped.querySelectorAll(sel);
-          // 从最后一个元素开始（最新回复）
+          // Start from the last element (latest reply)
           for (let i = els.length - 1; i >= 0; i--) {
             const el = els[i];
             if (isExcluded(el)) {
@@ -269,7 +267,7 @@ export class GeminiWebClientBrowser {
           }
         }
 
-        // 策略 2（受限回退）：只在 main 区域内找 markdown 渲染块，不匹配泛化选择器
+        // Strategy 2 (restricted fallback): only look for markdown rendered blocks in the main area, don't match generic selectors
         if (!text) {
           const fallbackSelectors = ['[class*="markdown"]', "article"];
           for (const sel of fallbackSelectors) {
@@ -298,11 +296,11 @@ export class GeminiWebClientBrowser {
         return { text, isStreaming };
       });
 
-      // 忽略过短内容（<40 字多为问候/按钮；日志 38 字为误抓问候语）
+      // Ignore too-short content (<40 chars is often greetings/buttons; log 38 chars was mis-captured greeting)
       const minLen = 40;
       if (result.text && result.text.length < minLen && result.text.length > 0) {
         console.log(
-          `[Gemini Web Browser] 忽略过短内容(${result.text.length}字): ${result.text.slice(0, 50)}...`,
+          `[Gemini Web Browser] Ignoring too-short content (${result.text.length} chars): ${result.text.slice(0, 50)}...`,
         );
       }
       if (result.text && result.text.length >= minLen) {
@@ -320,11 +318,11 @@ export class GeminiWebClientBrowser {
 
     if (!lastText) {
       throw new Error(
-        "Gemini DOM 模拟：未检测到回复。请确保 gemini.google.com 页面已打开、已登录，且输入框可见。",
+        "Gemini DOM simulation: no reply detected. Please ensure gemini.google.com is open, logged in, and the input box is visible.",
       );
     }
 
-    // 输出 gemini-web-stream 可解析的 data: 格式
+    // Output data: format parseable by gemini-web-stream
     const sseLine = `data: ${JSON.stringify({ text: lastText })}\n`;
     const encoder = new TextEncoder();
     return new ReadableStream<Uint8Array>({
@@ -346,7 +344,7 @@ export class GeminiWebClientBrowser {
     }
 
     const { message } = params;
-    console.log("[Gemini Web Browser] 使用 DOM 模拟发送消息...");
+    console.log("[Gemini Web Browser] Sending message via DOM simulation...");
 
     return this.chatCompletionsViaDOM({
       message,

@@ -1,5 +1,5 @@
 /**
- * Grok Web 适配器
+ * Grok Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class GrokAdapter extends BaseAdapter {
   readonly provider = "xai";
   readonly models = ["grok"];
   readonly defaultModel = "grok";
-  // Grok Web 实际使用的模型 ID
+  // Actual model ID used by Grok Web
   private readonly actualModelId = "grok-1";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class GrokAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "Grok Web 未认证，请先运行 openclaw onboard grok-web",
+          "Grok Web not authenticated, please run openclaw onboard grok-web first",
           startTime,
         );
       }

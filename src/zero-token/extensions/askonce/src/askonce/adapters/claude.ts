@@ -1,5 +1,5 @@
 /**
- * Claude Web 适配器
+ * Claude Web adapter
  */
 
 import {
@@ -15,7 +15,7 @@ export class ClaudeAdapter extends BaseAdapter {
   readonly provider = "anthropic";
   readonly models = ["claude"];
   readonly defaultModel = "claude";
-  // Claude Web 实际使用的模型 ID
+  // Actual model ID used by Claude Web
   private readonly actualModelId = "claude-sonnet-4-6";
 
   private cachedCredential: string | null = null;
@@ -70,7 +70,7 @@ export class ClaudeAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "Claude Web 未认证，请先运行 openclaw onboard claude-web",
+          "Claude Web not authenticated, please run openclaw onboard claude-web first",
           startTime,
         );
       }
@@ -95,7 +95,7 @@ export class ClaudeAdapter extends BaseAdapter {
 
       const stream = streamFn(model as any, context as any, { signal: options?.signal });
 
-      // 使用 AsyncIterable 处理流
+      // Process stream using AsyncIterable
       let content = "";
       try {
         for await (const event of stream) {

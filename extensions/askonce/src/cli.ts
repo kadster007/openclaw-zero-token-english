@@ -1,6 +1,6 @@
 /**
- * AskOnce CLI 命令
- * 插件版本
+ * AskOnce CLI Commands
+ * Plugin Version
  */
 
 import fs from "node:fs";
@@ -12,8 +12,8 @@ import { ConsoleFormatter, MarkdownFormatter, JsonFormatter } from "../askonce/f
 import { QueryOrchestrator } from "../askonce/query-orchestrator.js";
 
 /**
- * 自动检测并设置 OPENCLAW_STATE_DIR
- * 优先使用项目目录下的 .openclaw-zero-state
+ * Auto-detect and set OPENCLAW_STATE_DIR
+ * Prefer .openclaw-zero-state under project directory
  */
 function setupOpenclawStateDir(): void {
   if (process.env.OPENCLAW_STATE_DIR || process.env.OPENCLAW_ZERO_STATE_DIR) {
@@ -41,7 +41,7 @@ function setupOpenclawStateDir(): void {
 }
 
 /**
- * 注册 AskOnce CLI 命令
+ * Register AskOnce CLI Commands
  */
 export async function registerAskOnceCli(
   program: Command,
@@ -53,9 +53,9 @@ export async function registerAskOnceCli(
 
   const orchestrator = new QueryOrchestrator();
 
-  // 列出可用模型
+  // List available models
   if (options.list) {
-    console.log("\n可用模型列表:");
+    console.log("\nAvailable model list:");
     const models = await orchestrator.listAvailableModels();
     for (const model of models) {
       const status = model.available ? chalk.green("✓") : chalk.red("✗");
@@ -64,28 +64,28 @@ export async function registerAskOnceCli(
     return;
   }
 
-  // 检查问题参数
+  // Check question parameter
   if (!question || question.length === 0) {
-    console.error("错误: 请提供问题参数");
+    console.error("Error: Please provide a question parameter");
     console.error("");
-    console.error("用法:");
-    console.error('  openclaw askonce "你的问题"              # 提问');
-    console.error("  openclaw askonce --list                 # 列出可用模型");
-    console.error('  openclaw askonce "问题" -m claude-web   # 指定模型');
+    console.error("Usage:");
+    console.error('  openclaw askonce "your question"              # Ask a question');
+    console.error("  openclaw askonce --list                 # List available models");
+    console.error('  openclaw askonce "question" -m claude-web   # Specify model');
     console.error("");
-    console.error("提示: 配置认证请使用 openclaw onboard <provider>");
+    console.error("Tip: Use openclaw onboard <provider> to configure authentication");
     process.exit(1);
   }
 
-  // 合并多个单词的问题
+  // Join multi-word question
   const questionStr = question.join(" ");
 
-  // 解析模型列表
+  // Parse model list
   const modelIds = options.models
     ? options.models.split(",").map((m: string) => m.trim())
     : undefined;
 
-  // 选择格式化器
+  // Select formatter
   let formatter;
   switch (options.output) {
     case "markdown":
@@ -98,7 +98,7 @@ export async function registerAskOnceCli(
       formatter = new ConsoleFormatter();
   }
 
-  // 进度回调
+  // Progress callback
   const onProgress = (event: any) => {
     if (options.stream) {
       process.stdout.write(`\r[${event.modelId}] ${event.type}...`);
@@ -106,7 +106,7 @@ export async function registerAskOnceCli(
   };
 
   try {
-    // 执行查询
+    // Execute query
     const result = await orchestrator.query(
       {
         question: questionStr,
@@ -117,19 +117,19 @@ export async function registerAskOnceCli(
       onProgress,
     );
 
-    // 格式化输出
+    // Format output
     const output = formatter.format(result);
 
     if (options.file) {
-      // 写入文件
+      // Write to file
       const fs = await import("fs/promises");
       await fs.writeFile(options.file, output, "utf-8");
-      console.log(`\n结果已保存到: ${options.file}`);
+      console.log(`\nResult saved to: ${options.file}`);
     } else {
       console.log(output);
     }
   } catch (error) {
-    console.error("查询失败:", error instanceof Error ? error.message : error);
+    console.error("Query failed:", error instanceof Error ? error.message : error);
     process.exit(1);
   }
 }

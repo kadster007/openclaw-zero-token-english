@@ -1,5 +1,5 @@
 /**
- * ChatGPT Web 适配器
+ * ChatGPT Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class ChatGPTAdapter extends BaseAdapter {
   readonly provider = "openai";
   readonly models = ["chatgpt"];
   readonly defaultModel = "chatgpt";
-  // ChatGPT Web 实际使用的模型 ID
+  // Actual model ID used by ChatGPT Web
   private readonly actualModelId = "gpt-4";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class ChatGPTAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "ChatGPT Web 未认证，请先运行 openclaw onboard chatgpt-web",
+          "ChatGPT Web not authenticated, please run openclaw onboard chatgpt-web first",
           startTime,
         );
       }

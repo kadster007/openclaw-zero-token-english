@@ -1,11 +1,11 @@
 /**
- * 适配器基类
+ * Adapter base class
  */
 
 import type { ModelAdapter, ModelResponse, AdapterQueryOptions } from "../types.js";
 
 /**
- * 适配器抽象基类
+ * Abstract adapter base class
  */
 export abstract class BaseAdapter implements ModelAdapter {
   abstract readonly id: string;
@@ -15,19 +15,19 @@ export abstract class BaseAdapter implements ModelAdapter {
   abstract readonly defaultModel: string;
 
   /**
-   * 检查适配器是否可用
-   * 子类需要实现认证检查逻辑
+   * Check if the adapter is available
+   * Subclasses must implement authentication check logic
    */
   abstract isAvailable(): Promise<boolean>;
 
   /**
-   * 执行查询
-   * 子类需要实现具体的查询逻辑
+   * Execute a query
+   * Subclasses must implement specific query logic
    */
   abstract query(question: string, options?: AdapterQueryOptions): Promise<ModelResponse>;
 
   /**
-   * 创建响应对象
+   * Create a response object
    */
   protected createResponse(
     modelId: string,
@@ -50,14 +50,14 @@ export abstract class BaseAdapter implements ModelAdapter {
   }
 
   /**
-   * 延迟执行
+   * Delay execution
    */
   protected delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
-   * 解析错误消息
+   * Parse error message
    */
   protected parseError(error: unknown): string {
     if (error instanceof Error) {

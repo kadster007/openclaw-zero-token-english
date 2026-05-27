@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenClaw Zero Token - Chrome Debug Mode (port 9222)
+Documentation=https://github.com/openclaw/openclaw
+After=network.target
+
+[Service]
+Type=simple
+ExecStartPre=/bin/bash -c 'pgrep -f "chrome.*remote-debugging-port=9222" && pkill -f "chrome.*remote-debugging-port=9222" || true'
+ExecStart=/usr/bin/google-chrome-stable --remote-debugging-port=9222 --user-data-dir=/home/kadx/.config/chrome-openclaw-debug --no-first-run --no-default-browser-check --disable-background-networking --disable-sync --disable-translate --remote-allow-origins=*
+Restart=on-failure
+RestartSec=10
+User=kadx
+Environment=DISPLAY=:0
+Environment=HOME=/home/kadx
+
+[Install]
+WantedBy=multi-user.target

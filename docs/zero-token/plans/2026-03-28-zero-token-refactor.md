@@ -1,91 +1,91 @@
-# Zero Token 重构实施计划
+# Zero Token Refactor Implementation Plan
 
-> **状态（2026-03-28）**：Task 1–6 已全部落地；验证见文末「验证记录」。
+> **Status (2026-03-28)**: Tasks 1–6 have all been completed; see validation records at the end.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 在保持 Web 模型端到端行为不变的前提下，降低与上游 OpenClaw 的合并成本、完善浏览器授权文档，并为后续插件化迁移提供单一注册点。
+**Goal:** Reduce merge costs with upstream OpenClaw, improve browser authorization documentation, and provide a single registration point for future plugin migration — all while keeping Web model end-to-end behavior unchanged.
 
-**Architecture:** 将 **Web `model.api` → `create*WebStreamFn`** 收敛到 `src/zero-token/streams/web-stream-factories.ts`（`src/agents/web-stream-factories.ts` 为 re-export）；`attempt.ts` / `compact.ts` 经该表解析。通过 `docs/zero-token/upstream-sync.md` 列出 Zero Token 相对上游的改动面；通过 `docs/zero-token/web-models-browser-modes.md` 固化 CDP / Profile 约束与可选路径（含 bb-browser 参考）。不在本计划内引入 CLI-Anything 或完整 bb-browser 依赖。
+**Architecture:** Consolidate **Web `model.api` → `create*WebStreamFn`** into `src/zero-token/streams/web-stream-factories.ts` (`src/agents/web-stream-factories.ts` is a re-export); `attempt.ts` / `compact.ts` resolve through this registry. Use `docs/zero-token/upstream-sync.md` to list Zero Token's change surface relative to upstream; use `docs/zero-token/web-models-browser-modes.md` to document CDP / Profile constraints and available paths (including bb-browser reference). This plan does not introduce CLI-Anything or full bb-browser dependencies.
 
-**Tech Stack:** TypeScript (ESM)、Vitest、Playwright（既有）；Web 实现位于 `src/zero-token/`。
+**Tech Stack:** TypeScript (ESM), Vitest, Playwright (existing); Web implementation lives in `src/zero-token/`.
 
-**依据文档:** `docs/zero-token/zero-token-requirements.md`
-
----
-
-## 文件结构（本计划涉及）
-
-| 路径 | 职责 |
-|------|------|
-| `src/agents/web-stream-factories.ts`（新建） | 集中导出 `getWebStreamFactory(api)` 与各 Web 流式工厂 |
-| `src/agents/web-stream-factories.test.ts`（新建） | 校验注册表完整性与工厂可调用 |
-| `src/agents/pi-embedded-runner/run/attempt.ts` | 用 `getWebStreamFactory` 替换 11 段 `else if` |
-| `src/agents/pi-embedded-runner/compact.ts` | 同上，保持与 attempt 行为一致 |
-| `docs/zero-token/upstream-sync.md`（新建） | Zero Token 改动面清单与同步步骤 |
-| `docs/zero-token/web-models-browser-modes.md`（新建） | 浏览器模式 A/B/C 与约束说明 |
-| `docs/zero-token/zero-token-requirements.md` | 追加变更记录行指向本计划 |
+**Reference Doc:** `docs/zero-token/zero-token-requirements.md`
 
 ---
 
-### Task 1: 上游同步说明文档
+## File Structure (Covered by This Plan)
+
+| Path | Responsibility |
+|------|---------------|
+| `src/agents/web-stream-factories.ts` (new) | Central export of `getWebStreamFactory(api)` and all Web stream factories |
+| `src/agents/web-stream-factories.test.ts` (new) | Verify registry completeness and factory callability |
+| `src/agents/pi-embedded-runner/run/attempt.ts` | Replace 11 `else if` blocks with `getWebStreamFactory` |
+| `src/agents/pi-embedded-runner/compact.ts` | Same as above, maintain behavioral consistency with attempt |
+| `docs/zero-token/upstream-sync.md` (new) | Zero Token change surface checklist and sync steps |
+| `docs/zero-token/web-models-browser-modes.md` (new) | Browser modes A/B/C and constraint documentation |
+| `docs/zero-token/zero-token-requirements.md` | Append change log row pointing to this plan |
+
+---
+
+### Task 1: Upstream Sync Documentation
 
 **Files:**
 - Create: `docs/zero-token/upstream-sync.md`
 
-- [x] **Step 1: 写入文档正文**
+- [x] **Step 1: Write document body**
 
-将以下内容保存为 `docs/zero-token/upstream-sync.md`：
+Save the following content as `docs/zero-token/upstream-sync.md`:
 
 ```markdown
-# 与上游 OpenClaw 同步（Zero Token）
+# Syncing with Upstream OpenClaw (Zero Token)
 
-## 改动面清单（合并时优先检查）
+## Change Surface Checklist (Priority Check on Merge)
 
-以下路径相对 [openclaw/openclaw](https://github.com/openclaw/openclaw) 通常为 **有意差异**，`git merge` / `git rebase` 时需人工过一遍：
+The following paths are typically **intentionally different** from [openclaw/openclaw](https://github.com/openclaw/openclaw), and require manual review during `git merge` / `git rebase`:
 
-### 扩展与脚本
+### Extensions and Scripts
 
-- `src/zero-token/` — Web Provider 客户端 / 流式实现（原 `src/providers/*web*` + `*-web-stream.ts` 已迁入）
-- `start-chrome-debug.sh`、`onboard.sh`、`server.sh`（若存在）
-- `docs/zero-token/zero-token-requirements.md`、`docs/zero-token/web-models-browser-modes.md`、本文档
+- `src/zero-token/` — Web Provider clients / streaming implementation (originally `src/providers/*web*` + `*-web-stream.ts` migrated in)
+- `start-chrome-debug.sh`、`onboard.sh`、`server.sh` (if present)
+- `docs/zero-token/zero-token-requirements.md`、`docs/zero-token/web-models-browser-modes.md`、this document
 
-### Agent 与 Web 流式
+### Agent and Web Streaming
 
 - `src/agents/*-web-stream.ts`
-- `src/agents/web-stream-factories.ts`（集中注册表，降低 `attempt.ts` 冲突概率）
-- `src/agents/pi-embedded-runner/run/attempt.ts` — Web 流分支应尽可能仅调用 `getWebStreamFactory`
-- `src/agents/pi-embedded-runner/compact.ts` — 同上
-- `src/agents/models-config.providers.ts` — Provider 解析与懒加载
+- `src/agents/web-stream-factories.ts` (central registry, reduces `attempt.ts` conflict probability)
+- `src/agents/pi-embedded-runner/run/attempt.ts` — Web stream branch should preferably only call `getWebStreamFactory`
+- `src/agents/pi-embedded-runner/compact.ts` — Same as above
+- `src/agents/models-config.providers.ts` — Provider resolution and lazy loading
 
-### Provider 实现与认证
+### Provider Implementation and Auth
 
 - `src/providers/*-web*.ts`、`src/providers/*-web-auth.ts`
 - `src/commands/onboard-web-auth.ts`、`src/commands/auth-choice.apply.*.ts`
-- `src/commands/onboard-auth.config-core.ts`（各 Web 默认模型补丁）
+- `src/commands/onboard-auth.config-core.ts` (Web default model patches)
 
-### 配置类型
+### Config Types
 
-- `src/config/types.models.ts` — `ModelApi` / provider 枚举
+- `src/config/types.models.ts` — `ModelApi` / provider enum
 
-## 推荐同步步骤
+## Recommended Sync Steps
 
-1. `git fetch upstream`（将 `openclaw/openclaw` 配为 `upstream`）
-2. `git merge upstream/main`（或 `rebase`，按团队习惯）
-3. 按本节清单解决冲突；**优先保留**上游对通用子系统的修复，再重新应用 Zero Token 的 Web 相关 hunk
+1. `git fetch upstream` (configure `openclaw/openclaw` as `upstream`)
+2. `git merge upstream/main` (or `rebase`, per team preference)
+3. Resolve conflicts per this section's checklist; **prioritize keeping** upstream fixes to generic subsystems, then reapply Zero Token's Web-related hunks
 4. `pnpm install && pnpm build`
-5. `OPENCLAW_TEST_PROFILE=low pnpm test`（或全量 `pnpm test`，视机器资源）
+5. `OPENCLAW_TEST_PROFILE=low pnpm test` (or full `pnpm test`, depending on machine resources)
 
-## 非目标
+## Non-Goals
 
-- 不要求与上游文件级一致；要求 **行为回归**（Web 模型对话、onboard 授权）可验证。
+- File-level parity with upstream is not required; **behavioral regression** (Web model conversation, onboard authorization) must be verifiable.
 ```
 
-- [x] **Step 2: 在 `README.zh-CN.md` 目录中增加链接**
+- [x] **Step 2: Add link in `README.zh-CN.md` table of contents**
 
-在「与上游同步」对应位置或目录列表增加一行：`- [与上游同步说明](docs/zero-token/upstream-sync.md)`（若已有「与上游同步」章节，链到该文档）。
+Add a row to the relevant "Upstream Sync" section or directory listing: `- [Upstream Sync Guide](docs/zero-token/upstream-sync.md)` (if an "Upstream Sync" section already exists, link to this document).
 
-- [x] **Step 3: Commit**（由维护者在本地执行 `git commit`）
+- [x] **Step 3: Commit** (maintainer executes `git commit` locally)
 
 ```bash
 git add docs/zero-token/upstream-sync.md README.zh-CN.md README.md
@@ -94,13 +94,13 @@ git commit -m "docs: add upstream sync playbook for zero-token"
 
 ---
 
-### Task 2: Web 流式工厂模块 + 单测
+### Task 2: Web Stream Factory Module + Unit Tests
 
 **Files:**
 - Create: `src/agents/web-stream-factories.ts`
 - Create: `src/agents/web-stream-factories.test.ts`
 
-- [x] **Step 1: 新建 `src/agents/web-stream-factories.ts`**
+- [x] **Step 1: Create `src/agents/web-stream-factories.ts`**
 
 ```typescript
 import type { StreamFn } from "@mariozechner/pi-agent-core";
@@ -116,7 +116,7 @@ import { createKimiWebStreamFn } from "./kimi-web-stream.js";
 import { createQwenWebStreamFn } from "./qwen-web-stream.js";
 import { createXiaomiMimoWebStreamFn } from "./xiaomimo-web-stream.js";
 
-/** model.api 值 → 与 attempt.ts / compact.ts 原分支一致的工厂函数 */
+/** model.api value → factory function consistent with original attempt.ts / compact.ts branches */
 const WEB_STREAM_FACTORIES = {
   "deepseek-web": createDeepseekWebStreamFn,
   "claude-web": createClaudeWebStreamFn,
@@ -142,7 +142,7 @@ export function listWebStreamApiIds(): WebStreamApiId[] {
 }
 ```
 
-- [x] **Step 2: 新建 `src/agents/web-stream-factories.test.ts`**
+- [x] **Step 2: Create `src/agents/web-stream-factories.test.ts`**
 
 ```typescript
 import { describe, expect, it } from "vitest";
@@ -182,10 +182,10 @@ describe("web-stream-factories", () => {
 });
 ```
 
-- [x] **Step 3: 运行测试**
+- [x] **Step 3: Run tests**
 
 Run: `pnpm exec vitest run src/agents/web-stream-factories.test.ts`
-Expected: 全部 PASS
+Expected: ALL PASS
 
 - [x] **Step 4: Commit**
 
@@ -196,26 +196,26 @@ git commit -m "agents: centralize web stream factories registry"
 
 ---
 
-### Task 3: 重构 `attempt.ts`
+### Task 3: Refactor `attempt.ts`
 
 **Files:**
 - Modify: `src/agents/pi-embedded-runner/run/attempt.ts`
 
-- [x] **Step 1: 调整 import**
+- [x] **Step 1: Adjust imports**
 
-删除以下单独 import（若仅被 Web 分支使用）：
+Remove the following individual imports (if only used by Web branch):
 
-- `createChatGPTWebStreamFn` … `createXiaomiMimoWebStreamFn`（共 11 个 create*WebStreamFn）
+- `createChatGPTWebStreamFn` … `createXiaomiMimoWebStreamFn` (11 total create*WebStreamFn)
 
-新增：
+Add:
 
 ```typescript
 import { getWebStreamFactory } from "../../web-stream-factories.js";
 ```
 
-- [x] **Step 2: 替换 Web 分支块**
+- [x] **Step 2: Replace Web branch block**
 
-将自 `} else if (params.model.api === "deepseek-web") {` 起至 `} else if (params.model.api === "xiaomimo-web") { ... }` 的整段 **替换为** 下列 **嵌套在单个 `else` 内** 的结构（`openai-responses` 与最终 `else` 必须仍在该外层 `else` 内，并多一层闭合 `}`）：
+Replace the entire block from `} else if (params.model.api === "deepseek-web") {` through `} else if (params.model.api === "xiaomimo-web") { ... }` with the following structure **nested inside a single `else`** (`openai-responses` and the final `else` must still be inside that outer `else`, with one extra closing `}`):
 
 ```typescript
       } else {
@@ -245,12 +245,12 @@ import { getWebStreamFactory } from "../../web-stream-factories.js";
       }
 ```
 
-**Ollama** 的 `if (params.model.api === "ollama")` 块保留在整段 **之前**，不变。
+**Ollama**'s `if (params.model.api === "ollama")` block stays **before** the entire block, unchanged.
 
-- [x] **Step 3: 运行相关测试**
+- [x] **Step 3: Run relevant tests**
 
 Run: `pnpm exec vitest run src/plugins/hooks.model-override-wiring.test.ts --pool-forks=false`
-Expected: PASS（或全量 `pnpm test` 中与 embedded runner 相关的子集）
+Expected: PASS (or a subset of `pnpm test` related to the embedded runner)
 
 - [x] **Step 4: Commit**
 
@@ -261,22 +261,22 @@ git commit -m "agents: route web stream via getWebStreamFactory in attempt"
 
 ---
 
-### Task 4: 重构 `compact.ts`
+### Task 4: Refactor `compact.ts`
 
 **Files:**
 - Modify: `src/agents/pi-embedded-runner/compact.ts`
 
-- [x] **Step 1: 调整 import**
+- [x] **Step 1: Adjust imports**
 
-删除 11 个 `create*WebStreamFn` import，新增：
+Remove 11 `create*WebStreamFn` imports, add:
 
 ```typescript
 import { getWebStreamFactory } from "../web-stream-factories.js";
 ```
 
-- [x] **Step 2: 替换 `if (resolvedApiKey)` 内分支**
+- [x] **Step 2: Replace `if (resolvedApiKey)` inner branches**
 
-将：
+Replace:
 
 ```typescript
         if (model.api === "deepseek-web") {
@@ -288,7 +288,7 @@ import { getWebStreamFactory } from "../web-stream-factories.js";
         }
 ```
 
-替换为：
+With:
 
 ```typescript
         const webFactory = getWebStreamFactory(model.api);
@@ -297,10 +297,10 @@ import { getWebStreamFactory } from "../web-stream-factories.js";
         }
 ```
 
-- [x] **Step 3: 运行测试**
+- [x] **Step 3: Run tests**
 
 Run: `pnpm build && pnpm exec vitest run src/agents/pi-embedded-runner --passWithNoTests`
-Expected: 无编译错误；若有 compact 专用测试则 PASS
+Expected: No compilation errors; if compact-specific tests exist, PASS
 
 - [x] **Step 4: Commit**
 
@@ -311,21 +311,21 @@ git commit -m "agents: route web stream via getWebStreamFactory in compact"
 
 ---
 
-### Task 5: 浏览器模式文档
+### Task 5: Browser Mode Documentation
 
 **Files:**
 - Create: `docs/zero-token/web-models-browser-modes.md`
-- Modify: `docs/zero-token/zero-token-requirements.md`（变更记录）
+- Modify: `docs/zero-token/zero-token-requirements.md` (change log)
 
-- [x] **Step 1: 创建 `docs/zero-token/web-models-browser-modes.md`**
+- [x] **Step 1: Create `docs/zero-token/web-models-browser-modes.md`**
 
-内容需包含三节：**模式 A**（当前 `start-chrome-debug.sh` + 独立 `user-data-dir`）、**模式 B**（用户自行以 `--remote-debugging-port` + **同一专用目录** 启动单实例 Chrome，不在此模式下再开普通 Chrome 同目录）、**模式 C**（扩展/守护进程桥，如 bb-browser，仅作后续 PoC 参考）。每节写明：适用场景、限制（单实例、CDP 必须）、与 `browser.attachOnly` / `cdpUrl` 的配置关系。
+Content must include three sections: **Mode A** (current `start-chrome-debug.sh` + dedicated `user-data-dir`), **Mode B** (user launches single-instance Chrome with `--remote-debugging-port` + same dedicated directory, no regular Chrome on the same dir), **Mode C** (extension/daemon bridge, e.g. bb-browser, as future PoC reference). Each section should describe: applicable scenarios, constraints (single instance, CDP required), configuration relationship with `browser.attachOnly` / `cdpUrl`.
 
-- [x] **Step 2: 更新 `docs/zero-token/zero-token-requirements.md` 第 6 节表格**
+- [x] **Step 2: Update `docs/zero-token/zero-token-requirements.md` section 6 table**
 
-追加一行：`2026-03-28 | 实施计划 docs/zero-token/plans/2026-03-28-zero-token-refactor.md；浏览器模式见 docs/zero-token/web-models-browser-modes.md`
+Add a row: `2026-03-28 | Implementation plan docs/zero-token/plans/2026-03-28-zero-token-refactor.md; browser modes at docs/zero-token/web-models-browser-modes.md`
 
-- [x] **Step 3: README 目录增加 `docs/zero-token/web-models-browser-modes.md` 链接（可选与 Task 1 一并）**
+- [x] **Step 3: Add `docs/zero-token/web-models-browser-modes.md` link to README table of contents (can be combined with Task 1)**
 
 - [x] **Step 4: Commit**
 
@@ -336,39 +336,39 @@ git commit -m "docs: web browser modes for CDP and profiles"
 
 ---
 
-### Task 6（后续 / 可选）: bb-browser PoC 记录
+### Task 6 (Future / Optional): bb-browser PoC Recording
 
 **Files:**
 - Modify: `docs/zero-token/zero-token-requirements.md`
 
-- [x] 在本地验证 `bb-browser site <adapter> --openclaw` 是否满足某一站点需求；将结论（可用 / 不可用 / 缺口）写入需求文档变更记录。**本任务不修改 `package.json` 依赖，除非 PoC 通过后另开 PR。**（已完成：`npx bb-browser --help` 验证 CLI；结论文档化于 `docs/zero-token/web-models-browser-modes.md` 与 `docs/zero-token/zero-token-requirements.md`。）
+- [x] Verify locally whether `bb-browser site <adapter> --openclaw` meets a particular site's requirements; record the conclusion (usable / not usable / gaps) in the requirements doc change log. **This task does not modify `package.json` dependencies unless a separate PR is opened after the PoC passes.** (Completed: `npx bb-browser --help` verified CLI; conclusions documented in `docs/zero-token/web-models-browser-modes.md` and `docs/zero-token/zero-token-requirements.md`.)
 
 ---
 
-## Spec 对照自检
+## Specification Cross-Check
 
-| `docs/zero-token/zero-token-requirements.md` 章节 | 对应任务 |
-|----------------------------------------|----------|
-| §1 目标能力 / 端到端 | Task 2–4 保持行为等价 |
-| §2 减少 core 入侵 | Task 2–4 收敛热点；Task 1 文档化其余改动面 |
-| §3 浏览器授权 | Task 5（及可选 Task 6） |
-| §4 Web 模型目录 | 实现已收拢至 `src/zero-token/`；`models-config` 大段仍可在后续继续变薄 |
+| `docs/zero-token/zero-token-requirements.md` Section | Corresponding Task |
+|------------------------------------------------------|-------------------|
+| §1 Target Capabilities / End-to-End | Tasks 2–4 maintain behavioral equivalence |
+| §2 Reduce Core Intrusion | Tasks 2–4 consolidate hot spots; Task 1 documents remaining change surface |
+| §3 Browser Authorization | Task 5 (and optional Task 6) |
+| §4 Web Model Directory | Implementation already consolidated under `src/zero-token/`; `models-config` large sections can be further thinned later |
 
-## 计划自检
+## Plan Self-Check
 
-- 无 TBD /「类似 Task N」占位。
-- `getWebStreamFactory` 与 `attempt.ts` 原 11 个 `api` 字符串一致。
+- No TBD / "similar to Task N" placeholders.
+- `getWebStreamFactory` matches the original 11 `api` strings in `attempt.ts`.
 
 ---
 
-## 验证记录（2026-03-28）
+## Validation Records (2026-03-28)
 
-| 命令 | 结果 |
-|------|------|
+| Command | Result |
+|---------|--------|
 | `pnpm exec vitest run src/zero-token/streams/web-stream-factories.test.ts` | PASS |
 | `pnpm exec vitest run src/plugins/hooks.model-override-wiring.test.ts` | PASS |
-| `pnpm exec vitest run src/agents/pi-embedded-runner/run/attempt.test.ts src/agents/pi-embedded-runner/compact.hooks.test.ts` | PASS（已移除对已删除导出之测试；已修复 `compact.hooks` 的 message-channel mock；`compactEmbeddedPiSession` 在 `ownsCompaction` 引擎路径补全 before/after_compaction 哨兵钩子） |
-| `pnpm build` | PASS（依赖完整安装后） |
-| `npx -y bb-browser --help` | CLI 可用（Task 6 文档结论依据） |
+| `pnpm exec vitest run src/agents/pi-embedded-runner/run/attempt.test.ts src/agents/pi-embedded-runner/compact.hooks.test.ts` | PASS (removed tests for deleted exports; fixed compact.hooks message-channel mock; compactEmbeddedPiSession completes before/after_compaction sentinel hooks for ownsCompaction engine path) |
+| `pnpm build` | PASS (after full dependency installation) |
+| `npx -y bb-browser --help` | CLI usable (Task 6 documentation conclusion basis) |
 
-**计划文件：** `docs/zero-token/plans/2026-03-28-zero-token-refactor.md`（Task 1–6 步骤已全部勾选完成）。
+**Plan file:** `docs/zero-token/plans/2026-03-28-zero-token-refactor.md` (Tasks 1–6 steps all checked complete).

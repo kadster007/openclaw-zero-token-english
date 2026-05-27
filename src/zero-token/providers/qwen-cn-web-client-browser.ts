@@ -23,7 +23,7 @@ export interface QwenCNWebClientOptions {
 }
 
 /**
- * Qwen CN Web Client (qianwen.com 国内版) using Playwright browser context
+ * Qwen CN Web Client (qianwen.com China Edition) using Playwright browser context
  */
 export class QwenCNWebClientBrowser {
   private cookie: string;
@@ -349,7 +349,7 @@ export class QwenCNWebClientBrowser {
     return [
       {
         id: "Qwen3.5-Plus",
-        name: "Qwen 3.5 Plus (国内版)",
+        name: "Qwen 3.5 Plus (China Edition)",
         api: "qwen-cn-web",
         reasoning: false,
         input: ["text"],
@@ -359,7 +359,7 @@ export class QwenCNWebClientBrowser {
       },
       {
         id: "Qwen3.5-Turbo",
-        name: "Qwen 3.5 Turbo (国内版)",
+        name: "Qwen 3.5 Turbo (China Edition)",
         api: "qwen-cn-web",
         reasoning: false,
         input: ["text"],

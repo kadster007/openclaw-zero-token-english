@@ -109,19 +109,19 @@ echo "User-data dir: $USER_DATA_DIR"
 echo ""
 
 # ─── Single instance: stop any existing debug Chrome ─────────
-if pgrep -f "chrome.*remote-debugging-port=9222" > /dev/null 2>&1; then
+if pgrep -f "chrome.*remote-debugging-port=18789" > /dev/null 2>&1; then
   echo "Existing debug Chrome detected, stopping it..."
-  pkill -f "chrome.*remote-debugging-port=9222" 2>/dev/null
+  pkill -f "chrome.*remote-debugging-port=18789" 2>/dev/null
   sleep 2
 
-  if pgrep -f "chrome.*remote-debugging-port=9222" > /dev/null 2>&1; then
+  if pgrep -f "chrome.*remote-debugging-port=18789" > /dev/null 2>&1; then
     echo "Graceful stop failed, forcing..."
-    pkill -9 -f "chrome.*remote-debugging-port=9222" 2>/dev/null
+    pkill -9 -f "chrome.*remote-debugging-port=18789" 2>/dev/null
     sleep 1
   fi
 
-  if pgrep -f "chrome.*remote-debugging-port=9222" > /dev/null 2>&1; then
-    echo "✗ Could not stop existing Chrome. Run manually: pkill -9 -f 'chrome.*remote-debugging-port=9222'"
+  if pgrep -f "chrome.*remote-debugging-port=18789" > /dev/null 2>&1; then
+    echo "✗ Could not stop existing Chrome. Run manually: pkill -9 -f 'chrome.*remote-debugging-port=18789'"
     exit 1
   fi
   echo "✓ Stopped"
@@ -133,11 +133,11 @@ TMP_LOG="/tmp/chrome-debug.log"
 [ ! -d /tmp ] && TMP_LOG="$HOME/chrome-debug.log"
 
 echo "Starting Chrome in debug mode..."
-echo "Port: 9222"
+echo "Port: 18789"
 echo ""
 
 "$CHROME_PATH" \
-  --remote-debugging-port=9222 \
+  --remote-debugging-port=18789 \
   --user-data-dir="$USER_DATA_DIR" \
   --no-first-run \
   --no-default-browser-check \
@@ -154,7 +154,7 @@ echo "Chrome log: $TMP_LOG"
 # ─── Wait for startup ────────────────────────────────────────
 echo "Waiting for Chrome to start..."
 for i in {1..15}; do
-  if curl -s http://127.0.0.1:9222/json/version > /dev/null 2>&1; then
+  if curl -s http://127.0.0.1:18789/json/version > /dev/null 2>&1; then
     break
   fi
   echo -n "."
@@ -164,14 +164,14 @@ echo ""
 echo ""
 
 # ─── Result ──────────────────────────────────────────────────
-if curl -s http://127.0.0.1:9222/json/version > /dev/null 2>&1; then
-  VERSION_INFO=$(curl -s http://127.0.0.1:9222/json/version | jq -r '.Browser' 2>/dev/null || echo "unknown version")
+if curl -s http://127.0.0.1:18789/json/version > /dev/null 2>&1; then
+  VERSION_INFO=$(curl -s http://127.0.0.1:18789/json/version | jq -r '.Browser' 2>/dev/null || echo "unknown version")
 
   echo "✓ Chrome debug mode started successfully."
   echo ""
   echo "Chrome PID: $CHROME_PID"
   echo "Chrome version: $VERSION_INFO"
-  echo "Debug port: http://127.0.0.1:9222"
+  echo "Debug port: http://127.0.0.1:18789"
   echo "User-data dir: $USER_DATA_DIR"
   echo ""
   echo "Opening AI platform login pages (for one-time authorization)..."
@@ -190,7 +190,7 @@ if curl -s http://127.0.0.1:9222/json/version > /dev/null 2>&1; then
     "https://manus.im/app"
   )
   for url in "${WEB_URLS[@]}"; do
-    "$CHROME_PATH" --remote-debugging-port=9222 --user-data-dir="$USER_DATA_DIR" "$url" > /dev/null 2>&1 &
+    "$CHROME_PATH" --remote-debugging-port=18789 --user-data-dir="$USER_DATA_DIR" "$url" > /dev/null 2>&1 &
     sleep 0.5
   done
 
@@ -200,22 +200,22 @@ if curl -s http://127.0.0.1:9222/json/version > /dev/null 2>&1; then
   echo "Next steps:"
   echo "=========================================="
   echo "1. Log into the platforms you plan to use in each tab"
-  echo "2. In your config, make sure browser.attachOnly=true and browser.cdpUrl=http://127.0.0.1:9222"
+  echo "2. In your config, make sure browser.attachOnly=true and browser.cdpUrl=http://127.0.0.1:18789"
   echo "3. Run ./onboard.sh webauth and pick the platform to authorize (it will reuse this browser)"
   echo ""
   echo "Stop debug mode:"
-  echo "  pkill -f 'chrome.*remote-debugging-port=9222'"
+  echo "  pkill -f 'chrome.*remote-debugging-port=18789'"
   echo "=========================================="
 else
   echo "✗ Chrome failed to start"
   echo ""
   echo "Checks:"
   echo "  1. Chrome path: $CHROME_PATH"
-  echo "  2. Is port 9222 in use? lsof -i:9222"
+  echo "  2. Is port 18789 in use? lsof -i:18789"
   echo "  3. User-data dir permissions: $USER_DATA_DIR"
   echo "  4. Launch log: $TMP_LOG"
   echo ""
   echo "Manual launch:"
-  echo "  \"$CHROME_PATH\" --remote-debugging-port=9222 --user-data-dir=\"$USER_DATA_DIR\""
+  echo "  \"$CHROME_PATH\" --remote-debugging-port=18789 --user-data-dir=\"$USER_DATA_DIR\""
   exit 1
 fi

@@ -200,8 +200,8 @@ If you use `connectionMode: "webhook"`, set `verificationToken`. The Feishu webh
 When using webhook mode, set `channels.feishu.verificationToken` in your config. To get the value:
 
 1. In Feishu Open Platform, open your app
-2. Go to **Development** → **Events & Callbacks** (开发配置 → 事件与回调)
-3. Open the **Encryption** tab (加密策略)
+2. Go to **Development** → **Events & Callbacks**
+3. Open the **Encryption** tab
 4. Copy **Verification Token**
 
 ![Verification Token location](../images/feishu-verification-token.png)

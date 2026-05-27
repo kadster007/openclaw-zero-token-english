@@ -1,6 +1,6 @@
 /**
- * 并发执行引擎
- * 负责并发调度所有模型适配器的查询请求
+ * Concurrent execution engine
+ * Responsible for concurrent scheduling of query requests across all model adapters
  */
 
 import {
@@ -18,14 +18,14 @@ import type {
 } from "./types.js";
 
 /**
- * 并发执行引擎配置
+ * Concurrent engine configuration
  */
 export interface ConcurrentEngineConfig {
-  /** 默认超时时间 (毫秒) */
+  /** Default timeout (milliseconds) */
   timeout: number;
-  /** 最大重试次数 */
+  /** Maximum retry count */
   maxRetries: number;
-  /** 并发限制 (同时执行的最大数量) */
+  /** Concurrency limit (max simultaneous executions) */
   concurrencyLimit: number;
 }
 
@@ -36,7 +36,7 @@ const DEFAULT_CONFIG: ConcurrentEngineConfig = {
 };
 
 /**
- * 并发执行引擎
+ * Concurrent execution engine
  */
 export class ConcurrentEngine {
   private config: ConcurrentEngineConfig;
@@ -46,13 +46,13 @@ export class ConcurrentEngine {
   }
 
   /**
-   * 并发执行多个模型查询
+   * Execute queries across multiple models concurrently
    *
-   * @param adapters 要执行的适配器列表
-   * @param question 问题内容
-   * @param options 查询选项
-   * @param onProgress 进度回调
-   * @returns 所有模型的响应结果
+   * @param adapters List of adapters to execute
+   * @param question The question content
+   * @param options Query options
+   * @param onProgress Progress callback
+   * @returns Response results from all models
    */
   async executeAll(
     adapters: ModelAdapter[],
@@ -60,30 +60,30 @@ export class ConcurrentEngine {
     options: AdapterQueryOptions = {},
     onProgress?: ProgressCallback,
   ): Promise<ModelResponse[]> {
-    // 过滤出可用的适配器
+    // Filter available adapters
     const availableAdapters = await this.filterAvailableAdapters(adapters);
 
     if (availableAdapters.length === 0) {
-      console.warn("[ConcurrentEngine] 没有可用的模型适配器");
+      console.warn("[ConcurrentEngine] No available model adapters");
       return [];
     }
 
-    console.log(`[ConcurrentEngine] 开始并发查询 ${availableAdapters.length} 个模型`);
+    console.log(`[ConcurrentEngine] Starting concurrent query on ${availableAdapters.length} models`);
 
-    // 创建并发任务
+    // Create concurrent tasks
     const tasks = availableAdapters.map((adapter) =>
       this.executeWithRetry(adapter, question, options, onProgress),
     );
 
-    // 使用 Promise.allSettled 并发执行，确保单个失败不影响其他
+    // Use Promise.allSettled for concurrent execution, ensuring single failure does not affect others
     const results = await Promise.allSettled(tasks);
 
-    // 聚合结果
+    // Aggregate results
     return results.map((result, index) => {
       if (result.status === "fulfilled") {
         return result.value;
       } else {
-        // 创建错误响应
+        // Create error response
         const adapter = availableAdapters[index];
         return {
           modelId: adapter.defaultModel,
@@ -101,7 +101,7 @@ export class ConcurrentEngine {
   }
 
   /**
-   * 过滤出可用的适配器
+   * Filter available adapters
    */
   private async filterAvailableAdapters(adapters: ModelAdapter[]): Promise<ModelAdapter[]> {
     const availabilityChecks = await Promise.all(
@@ -115,7 +115,7 @@ export class ConcurrentEngine {
   }
 
   /**
-   * 带重试的执行
+   * Execute with retry
    */
   private async executeWithRetry(
     adapter: ModelAdapter,
@@ -128,20 +128,20 @@ export class ConcurrentEngine {
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       if (attempt > 0) {
-        // 指数退避
+        // Exponential backoff
         const delay = Math.min(RETRY_BASE_DELAY * Math.pow(2, attempt - 1), MAX_RETRY_DELAY);
-        console.log(`[ConcurrentEngine] ${adapter.name} 第 ${attempt} 次重试，等待 ${delay}ms`);
+        console.log(`[ConcurrentEngine] ${adapter.name} retry ${attempt}, waiting ${delay}ms`);
         await this.delay(delay);
       }
 
       try {
-        // 发送开始事件
+        // Send start event
         onProgress?.({
           type: "start",
           modelId: adapter.defaultModel,
         });
 
-        // 创建超时控制器
+        // Create timeout controller
         const controller = new AbortController();
         const timeoutId = setTimeout(
           () => controller.abort(),
@@ -155,7 +155,7 @@ export class ConcurrentEngine {
 
         clearTimeout(timeoutId);
 
-        // 发送完成事件
+        // Send complete event
         onProgress?.({
           type: "complete",
           modelId: adapter.defaultModel,
@@ -166,12 +166,12 @@ export class ConcurrentEngine {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
 
-        // 超时错误不重试
+        // Timeout errors do not retry
         if (lastError.name === "AbortError") {
           onProgress?.({
             type: "error",
             modelId: adapter.defaultModel,
-            data: { error: "请求超时" },
+            data: { error: "Request timeout" },
           });
 
           return {
@@ -180,7 +180,7 @@ export class ConcurrentEngine {
             provider: adapter.provider,
             status: "timeout",
             content: "",
-            error: "请求超时",
+            error: "Request timeout",
             responseTime: this.config.timeout,
             charCount: 0,
             timestamp: Date.now(),
@@ -189,7 +189,7 @@ export class ConcurrentEngine {
       }
     }
 
-    // 所有重试都失败
+    // All retries failed
     onProgress?.({
       type: "error",
       modelId: adapter.defaultModel,

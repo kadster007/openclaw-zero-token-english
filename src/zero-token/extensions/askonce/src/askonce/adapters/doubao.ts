@@ -1,5 +1,5 @@
 /**
- * Doubao (豆包) Web 适配器
+ * Doubao Web adapter
  */
 
 import {
@@ -16,7 +16,7 @@ export class DoubaoAdapter extends BaseAdapter {
   readonly provider = "bytedance";
   readonly models = ["doubao"];
   readonly defaultModel = "doubao";
-  // Doubao Web 实际使用的模型 ID
+  // Actual model ID used by Doubao Web
   private readonly actualModelId = "doubao-seed-2.0";
 
   private cachedCredential: string | null = null;
@@ -71,7 +71,7 @@ export class DoubaoAdapter extends BaseAdapter {
           modelId,
           "error",
           "",
-          "Doubao Web 未认证，请先运行 openclaw onboard doubao-web",
+          "Doubao Web not authenticated, please run openclaw onboard doubao-web first",
           startTime,
         );
       }

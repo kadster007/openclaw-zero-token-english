@@ -1,5 +1,5 @@
 /**
- * 终端输出格式化
+ * Console output formatter
  */
 
 import chalk from "chalk";
@@ -9,30 +9,30 @@ export class ConsoleFormatter {
   format(result: QueryResult): string {
     const lines: string[] = [];
 
-    // 标题
+    // Title
     lines.push(chalk.bold.blue("\n═══════════════════════════════════════════════════════════"));
-    lines.push(chalk.bold.blue("                    AskOnce 查询结果                        "));
+    lines.push(chalk.bold.blue("                    AskOnce Query Results                   "));
     lines.push(chalk.bold.blue("═══════════════════════════════════════════════════════════\n"));
 
-    // 问题
-    lines.push(chalk.gray("问题: ") + chalk.white(result.question));
+    // Question
+    lines.push(chalk.gray("Question: ") + chalk.white(result.question));
     lines.push(
       chalk.gray(
-        `耗时: ${result.totalTime}ms | 成功: ${result.successCount} | 失败: ${result.errorCount}`,
+        `Duration: ${result.totalTime}ms | Success: ${result.successCount} | Failed: ${result.errorCount}`,
       ),
     );
     lines.push("");
 
-    // 按响应时间排序
+    // Sort by response time
     const sortedResponses = [...result.responses].sort((a, b) => a.responseTime - b.responseTime);
 
-    // 每个模型的响应
+    // Each model's response
     for (let i = 0; i < sortedResponses.length; i++) {
       const response = sortedResponses[i];
       lines.push(this.formatResponse(response, i + 1));
     }
 
-    // 统计摘要
+    // Summary statistics
     lines.push(this.formatSummary(result));
 
     return lines.join("\n");
@@ -41,26 +41,26 @@ export class ConsoleFormatter {
   private formatResponse(response: ModelResponse, index: number): string {
     const lines: string[] = [];
 
-    // 状态图标
+    // Status icon
     const statusIcon = this.getStatusIcon(response.status);
 
-    // 头部
+    // Header
     lines.push(chalk.gray("┌─────────────────────────────────────────────────────────┐"));
     lines.push(
       chalk.gray("│ ") +
         statusIcon +
         " " +
         chalk.bold(response.modelName) +
-        chalk.gray(` | ${response.responseTime}ms | ${response.charCount} 字`),
+        chalk.gray(` | ${response.responseTime}ms | ${response.charCount} chars`),
     );
     lines.push(chalk.gray("├─────────────────────────────────────────────────────────┤"));
 
-    // 内容
+    // Content
     if (response.status === "completed") {
       const content = this.truncateContent(response.content, 500);
       lines.push(chalk.gray("│ ") + chalk.white(content));
     } else {
-      lines.push(chalk.gray("│ ") + chalk.red(`错误: ${response.error}`));
+      lines.push(chalk.gray("│ ") + chalk.red(`Error: ${response.error}`));
     }
 
     lines.push(chalk.gray("└─────────────────────────────────────────────────────────┘"));
@@ -92,23 +92,23 @@ export class ConsoleFormatter {
   private formatSummary(result: QueryResult): string {
     const lines: string[] = [];
 
-    lines.push(chalk.bold("\n📊 统计摘要:"));
+    lines.push(chalk.bold("\n📊 Summary Statistics:"));
     lines.push(chalk.gray("─────────────────────────────────────────"));
 
-    // 速度排名
+    // Speed ranking
     const completed = result.responses.filter((r) => r.status === "completed");
     const speedRank = [...completed].sort((a, b) => a.responseTime - b.responseTime).slice(0, 3);
 
     if (speedRank.length > 0) {
-      lines.push(chalk.bold("\n⚡ 响应速度排名:"));
+      lines.push(chalk.bold("\n⚡ Response Speed Ranking:"));
       speedRank.forEach((r, i) => {
         lines.push(`  ${i + 1}. ${r.modelName} (${r.responseTime}ms)`);
       });
     }
 
-    // 长度统计
+    // Length statistics
     if (completed.length > 0) {
-      lines.push(chalk.bold("\n📏 回答长度:"));
+      lines.push(chalk.bold("\n📏 Response Length:"));
       completed
         .sort((a, b) => b.charCount - a.charCount)
         .forEach((r) => {

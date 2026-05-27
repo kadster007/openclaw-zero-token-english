@@ -22,7 +22,7 @@ export interface XiaomiMimoWebClientOptions {
 
 const XIAOMIMO_BASE_URL = "https://aistudio.xiaomimimo.com";
 
-/** 模型名映射 */
+/** Model name mapping */
 const MODEL_MAP: Record<string, string> = {
   "xiaomimo-chat": "mimo-v2-flash-studio",
   "mimo-v2-pro": "mimo-v2-flash-studio",
@@ -102,7 +102,7 @@ export class XiaomiMimoWebClientBrowser {
       await this.page.goto(`${XIAOMIMO_BASE_URL}/`, { waitUntil: "domcontentloaded" });
     }
 
-    // 设置 cookies
+    // Set cookies
     const rawCookies = this.cookie
       .split(";")
       .filter((c) => c.trim().includes("="))
@@ -245,7 +245,7 @@ export class XiaomiMimoWebClientBrowser {
 
     console.log(`[XiaomiMimo] Result: ok=${result.ok}, len=${result.data?.length || 0}`);
 
-    // 保存 conversationId 以便后续复用
+    // Save conversationId for future reuse
     if (result.convId) {
       this.conversationId = result.convId;
       console.log(`[XiaomiMimo] Saved conversationId: ${result.convId}`);

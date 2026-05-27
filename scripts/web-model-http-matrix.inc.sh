@@ -1,8 +1,8 @@
 # shellcheck shell=bash
-# 由 test-web-model-matrix.sh 和 test-web-model-e2e.sh source；
-# 定义待测 provider/model（与 src/zero-token/bridge/web-providers.ts 目录一致）。
+# Sourced by test-web-model-matrix.sh and test-web-model-e2e.sh;
+# Defines providers/models to test (consistent with src/zero-token/bridge/web-providers.ts directory).
 
-# 完整 Web 模型矩阵（13 个 provider）
+# Full Web model matrix (13 providers)
 WEB_MODEL_MATRIX_ENTRIES=(
   "claude-web/claude-sonnet-4-6"
   "chatgpt-web/gpt-4"

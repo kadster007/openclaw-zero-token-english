@@ -1,9 +1,9 @@
 /**
- * AskOnce 常量配置
+ * AskOnce Constants Configuration
  */
 
 /**
- * 支持的模型列表及其配置
+ * Supported model list and their configuration
  */
 export const SUPPORTED_MODELS = {
   "claude-web": {
@@ -74,7 +74,7 @@ export const SUPPORTED_MODELS = {
 export type SupportedModelId = keyof typeof SUPPORTED_MODELS;
 
 /**
- * 模型提供商分组
+ * Model provider groups
  */
 export const PROVIDER_GROUPS = {
   anthropic: ["claude-web"],
@@ -89,26 +89,26 @@ export const PROVIDER_GROUPS = {
 };
 
 /**
- * 默认超时时间 (毫秒)
+ * Default timeout (milliseconds)
  */
 export const DEFAULT_TIMEOUT = 60000;
 
 /**
- * 最大重试次数
+ * Maximum retry count
  */
 export const MAX_RETRIES = 2;
 
 /**
- * 并发限制
+ * Concurrency limit
  */
 export const CONCURRENCY_LIMIT = 10;
 
 /**
- * 重试延迟基数 (毫秒)
+ * Retry base delay (milliseconds)
  */
 export const RETRY_BASE_DELAY = 1000;
 
 /**
- * 最大重试延迟 (毫秒)
+ * Maximum retry delay (milliseconds)
  */
 export const MAX_RETRY_DELAY = 10000;

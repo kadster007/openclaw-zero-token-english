@@ -388,7 +388,7 @@ export async function buildQwenCNWebProvider(_params?: {
     models: [
       {
         id: "Qwen3.5-Plus",
-        name: "Qwen 3.5 Plus (国内版)",
+        name: "Qwen 3.5 Plus (China Edition)",
         reasoning: false,
         input: ["text"],
         cost: QWEN_CN_WEB_DEFAULT_COST,
@@ -397,7 +397,7 @@ export async function buildQwenCNWebProvider(_params?: {
       },
       {
         id: "Qwen3.5-Turbo",
-        name: "Qwen 3.5 Turbo (国内版)",
+        name: "Qwen 3.5 Turbo (China Edition)",
         reasoning: false,
         input: ["text"],
         cost: QWEN_CN_WEB_DEFAULT_COST,
@@ -547,7 +547,7 @@ export async function buildGlmIntlWebProvider(_params?: {
     models: [
       {
         id: "glm-4-plus",
-        name: "GLM-4 Plus (International)",
+        name: "GLM-4 Plus (International Edition)",
         reasoning: false,
         input: ["text"],
         cost: GLM_INTL_WEB_DEFAULT_COST,
@@ -556,7 +556,7 @@ export async function buildGlmIntlWebProvider(_params?: {
       },
       {
         id: "glm-4-think",
-        name: "GLM-4 Think (International)",
+        name: "GLM-4 Think (International Edition)",
         reasoning: true,
         input: ["text"],
         cost: GLM_INTL_WEB_DEFAULT_COST,
